@@ -3,6 +3,7 @@ let timerInterval = null;
 let startTime = null;
 let elapsedSeconds = 0;
 let entries = [];
+let nextId = Date.now();
 
 // DOM elements
 const taskNameInput = document.getElementById('taskName');
@@ -27,6 +28,7 @@ stopBtn.addEventListener('click', stopTimer);
 entriesList.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-delete')) {
         const entryItem = e.target.closest('.entry-item');
+        if (!entryItem) return;
         const entryId = parseInt(entryItem.dataset.id);
         deleteEntry(entryId);
     }
@@ -58,7 +60,7 @@ function stopTimer() {
 
     // Create new entry
     const entry = {
-        id: Date.now(),
+        id: nextId++,
         task: taskNameInput.value.trim(),
         duration: elapsedSeconds,
         timestamp: new Date().toISOString()
@@ -161,6 +163,11 @@ function loadEntries() {
     if (stored) {
         try {
             entries = JSON.parse(stored);
+            // Update nextId to be greater than any existing ID
+            if (entries.length > 0) {
+                const maxId = Math.max(...entries.map(e => e.id));
+                nextId = maxId + 1;
+            }
         } catch (e) {
             console.error('Failed to load entries from localStorage:', e);
             entries = [];
