@@ -159,12 +159,22 @@ function saveEntries() {
 function loadEntries() {
     const stored = localStorage.getItem('timeEntries');
     if (stored) {
-        entries = JSON.parse(stored);
+        try {
+            entries = JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to load entries from localStorage:', e);
+            entries = [];
+        }
     }
 }
 
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
