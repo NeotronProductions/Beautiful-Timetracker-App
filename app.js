@@ -149,11 +149,15 @@ function updateTodaySummary() {
     });
     
     if (Object.keys(projectTotals).length === 0) {
-        todaySummary.innerHTML = '<div class="empty-state">Noch keine Zeiteinträge heute</div>';
+        todaySummary.textContent = '';
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.textContent = 'Noch keine Zeiteinträge heute';
+        todaySummary.appendChild(emptyState);
         return;
     }
     
-    todaySummary.innerHTML = '';
+    todaySummary.textContent = '';
     Object.entries(projectTotals).forEach(([project, duration]) => {
         const card = document.createElement('div');
         card.className = 'summary-card';
@@ -178,11 +182,15 @@ function updateTodaySummary() {
 
 function updateEntriesList() {
     if (timeEntries.length === 0) {
-        entriesList.innerHTML = '<div class="empty-state">Keine Zeiteinträge vorhanden</div>';
+        entriesList.textContent = '';
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.textContent = 'Keine Zeiteinträge vorhanden';
+        entriesList.appendChild(emptyState);
         return;
     }
     
-    entriesList.innerHTML = '';
+    entriesList.textContent = '';
     timeEntries.forEach(entry => {
         const card = createEntryCard(entry);
         entriesList.appendChild(card);
@@ -258,7 +266,7 @@ function editEntry(id) {
     const currentTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     
     const entryTimeEl = card.querySelector('.entry-time');
-    entryTimeEl.innerHTML = '';
+    entryTimeEl.textContent = '';
     
     const input = document.createElement('input');
     input.type = 'text';
@@ -269,7 +277,7 @@ function editEntry(id) {
     entryTimeEl.appendChild(input);
     
     const actions = card.querySelector('.entry-actions');
-    actions.innerHTML = '';
+    actions.textContent = '';
     
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn-edit';
