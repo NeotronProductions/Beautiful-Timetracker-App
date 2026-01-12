@@ -23,6 +23,15 @@ startBtn.addEventListener('click', startTimer);
 // Stop button click handler
 stopBtn.addEventListener('click', stopTimer);
 
+// Delete button click handler using event delegation
+entriesList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-delete')) {
+        const entryItem = e.target.closest('.entry-item');
+        const entryId = parseInt(entryItem.dataset.id);
+        deleteEntry(entryId);
+    }
+});
+
 function startTimer() {
     const taskName = taskNameInput.value.trim();
     if (!taskName) {
@@ -130,7 +139,7 @@ function renderEntries() {
                 <div class="entry-meta">${formatDate(entry.timestamp)}</div>
             </div>
             <div class="entry-duration">${formatDuration(entry.duration)}</div>
-            <button class="btn-delete" onclick="deleteEntry(${entry.id})">Delete</button>
+            <button class="btn-delete">Delete</button>
         </div>
     `).join('');
 }
