@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Timetracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⏱️ Beautiful Timetracker</h1>
+            <p class="subtitle">Verfolgen Sie Ihre Projektzeit elegant</p>
+        </header>
+
+        <main>
+            <section class="timer-section">
+                <div class="project-selector">
+                    <label for="project-select">Projekt auswählen:</label>
+                    <div class="select-wrapper">
+                        <select id="project-select">
+                            <option value="">-- Projekt wählen --</option>
+                            <option value="Projekt A">Projekt A</option>
+                            <option value="Projekt B">Projekt B</option>
+                            <option value="Projekt C">Projekt C</option>
+                        </select>
+                    </div>
+                    <div class="custom-project">
+                        <input type="text" id="custom-project-input" placeholder="Neues Projekt hinzufügen">
+                        <button id="add-project-btn" class="btn-secondary">+</button>
+                    </div>
+                </div>
+
+                <div class="timer-display">
+                    <div class="current-time">
+                        <span id="timer">00:00:00</span>
+                    </div>
+                    <div class="timer-controls">
+                        <button id="start-btn" class="btn-primary" disabled>
+                            <span class="btn-icon">▶</span> Start
+                        </button>
+                        <button id="stop-btn" class="btn-danger" disabled>
+                            <span class="btn-icon">⏸</span> Stop
+                        </button>
+                    </div>
+                    <div id="current-project-display" class="current-project"></div>
+                </div>
+            </section>
+
+            <section class="summary-section">
+                <h2>Heutige Zusammenfassung</h2>
+                <div id="today-summary" class="summary-grid"></div>
+            </section>
+
+            <section class="entries-section">
+                <h2>Zeiteinträge</h2>
+                <div id="entries-list" class="entries-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
