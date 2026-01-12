@@ -162,10 +162,16 @@ function updateTodaySummary() {
         const minutes = Math.floor((duration % 3600000) / 60000);
         const seconds = Math.floor((duration % 60000) / 1000);
         
-        card.innerHTML = `
-            <div class="project-name">${project}</div>
-            <div class="project-time">${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}</div>
-        `;
+        const projectNameDiv = document.createElement('div');
+        projectNameDiv.className = 'project-name';
+        projectNameDiv.textContent = project;
+        
+        const projectTimeDiv = document.createElement('div');
+        projectTimeDiv.className = 'project-time';
+        projectTimeDiv.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        card.appendChild(projectNameDiv);
+        card.appendChild(projectTimeDiv);
         todaySummary.appendChild(card);
     });
 }
@@ -195,17 +201,45 @@ function createEntryCard(entry) {
     const startTime = new Date(entry.startTime);
     const endTime = new Date(entry.endTime);
     
-    card.innerHTML = `
-        <div class="entry-info">
-            <div class="entry-project">${entry.project}</div>
-            <div class="entry-time">${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}</div>
-            <div class="entry-timestamp">${startTime.toLocaleTimeString('de-DE')} - ${endTime.toLocaleTimeString('de-DE')} | ${new Date(entry.date).toLocaleDateString('de-DE')}</div>
-        </div>
-        <div class="entry-actions">
-            <button class="btn-edit" onclick="editEntry(${entry.id})">Bearbeiten</button>
-            <button class="btn-delete" onclick="deleteEntry(${entry.id})">Löschen</button>
-        </div>
-    `;
+    // Create info section
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'entry-info';
+    
+    const projectDiv = document.createElement('div');
+    projectDiv.className = 'entry-project';
+    projectDiv.textContent = entry.project;
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'entry-time';
+    timeDiv.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    const timestampDiv = document.createElement('div');
+    timestampDiv.className = 'entry-timestamp';
+    timestampDiv.textContent = `${startTime.toLocaleTimeString('de-DE')} - ${endTime.toLocaleTimeString('de-DE')} | ${new Date(entry.date).toLocaleDateString('de-DE')}`;
+    
+    infoDiv.appendChild(projectDiv);
+    infoDiv.appendChild(timeDiv);
+    infoDiv.appendChild(timestampDiv);
+    
+    // Create actions section
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'entry-actions';
+    
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-edit';
+    editBtn.textContent = 'Bearbeiten';
+    editBtn.addEventListener('click', () => editEntry(entry.id));
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-delete';
+    deleteBtn.textContent = 'Löschen';
+    deleteBtn.addEventListener('click', () => deleteEntry(entry.id));
+    
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(deleteBtn);
+    
+    card.appendChild(infoDiv);
+    card.appendChild(actionsDiv);
     
     return card;
 }
@@ -224,15 +258,33 @@ function editEntry(id) {
     const currentTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     
     const entryTimeEl = card.querySelector('.entry-time');
-    entryTimeEl.innerHTML = `<input type="text" class="edit-input" value="${currentTime}" id="edit-${id}" placeholder="HH:MM:SS">`;
+    entryTimeEl.innerHTML = '';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'edit-input';
+    input.value = currentTime;
+    input.id = `edit-${id}`;
+    input.placeholder = 'HH:MM:SS';
+    entryTimeEl.appendChild(input);
     
     const actions = card.querySelector('.entry-actions');
-    actions.innerHTML = `
-        <button class="btn-edit" onclick="saveEntry(${id})">Speichern</button>
-        <button class="btn-delete" onclick="cancelEdit(${id})">Abbrechen</button>
-    `;
+    actions.innerHTML = '';
     
-    document.getElementById(`edit-${id}`).focus();
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-edit';
+    saveBtn.textContent = 'Speichern';
+    saveBtn.addEventListener('click', () => saveEntry(id));
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn-delete';
+    cancelBtn.textContent = 'Abbrechen';
+    cancelBtn.addEventListener('click', () => cancelEdit(id));
+    
+    actions.appendChild(saveBtn);
+    actions.appendChild(cancelBtn);
+    
+    input.focus();
 }
 
 function saveEntry(id) {
@@ -251,6 +303,12 @@ function saveEntry(id) {
     
     if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
         alert('Ungültige Zeitwerte.');
+        return;
+    }
+    
+    // Validate ranges
+    if (hours < 0 || minutes < 0 || minutes >= 60 || seconds < 0 || seconds >= 60) {
+        alert('Ungültige Zeitwerte. Minuten und Sekunden müssen zwischen 0 und 59 liegen.');
         return;
     }
     
