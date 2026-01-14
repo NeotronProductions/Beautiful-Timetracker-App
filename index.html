@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Timetracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⏱️ Beautiful Timetracker</h1>
+            <p class="subtitle">Track your time beautifully</p>
+        </header>
+
+        <main>
+            <section class="timer-section">
+                <div class="timer-card">
+                    <input type="text" id="taskName" placeholder="What are you working on?" class="task-input">
+                    
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    
+                    <div class="timer-controls">
+                        <button id="startBtn" class="btn btn-start">
+                            <span class="btn-icon">▶</span> Start
+                        </button>
+                        <button id="stopBtn" class="btn btn-stop" style="display: none;">
+                            <span class="btn-icon">⏹</span> Stop
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="entries-section">
+                <h2>Time Entries</h2>
+                <div id="entriesList" class="entries-list">
+                    <p class="empty-state">No time entries yet. Start tracking!</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Made with ❤️ for productivity</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
