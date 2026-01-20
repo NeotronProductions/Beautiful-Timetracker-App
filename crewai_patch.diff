@@ -1,0 +1,63 @@
+diff --git a/timetracker/configs/chart_config.py b/timetracker/configs/chart_config.py
+new file mode 100644
+index 0000000..d257d6b
+--- /dev/null
++++ b/timetracker/configs/chart_config.py
+@@ -0,0 +1,15 @@
++# Define project colors and chart settings
++PROJECT_COLORS = {
++    'Project A': '#FF5733',
++    'Project B': '#33FF57',
++    'Project C': '#6C34DF',
++    # Add more projects as needed
++}
++
++CHART_SETTINGS = {
++    'title': 'Daily Project Composition',
++    'x_axis_labels': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
++    'tooltip_format': '{day} - {project}: {time}'
++}
+diff --git a/timetracker/charts/stacked_bar_chart/chart_generator.py b/timetracker/charts/stacked_bar_chart/chart_generator.py
+new file mode 100644
+index 0000000..059c2e7
+--- /dev/null
++++ b/timetracker/charts/stacked_bar_chart/chart_generator.py
+@@ -0,0 +1,3 @@
++from .chart_config import PROJECT_COLORS, CHART_SETTINGS
++
++def generate_stacked_bar_chart(data):
++    # Implement data processing and visualization logic here
+diff --git a/timetracker/main.py b/timetracker/main.py
+index 8a7f9e4..b5c9b6d 100644
+--- a/timetracker/main.py
++++ b/timetracker/main.py
+@@ -1,3 +1,4 @@
+ from . import configs, charts
+ 
++from .charts.stacked_bar_chart.chart_generator import generate_stacked_bar_chart
+ 
+ def run_timetracker():
+     # Retrieve data and call chart generator
+diff --git a/timetracker/tests/test_chart_generator.py b/timetracker/tests/test_chart_generator.py
+new file mode 100644
+index 0000000..5a7d9b3
+--- /dev/null
++++ b/timetracker/tests/test_chart_generator.py
+@@ -0,0 +1,13 @@
++from unittest.mock import patch
++
++import pytest
++
++from .charts.stacked_bar_chart.chart_generator import generate_stacked_bar_chart
++
++
++@patch('timetracker.configs.chart_config.PROJECT_COLORS')
++@patch('timetracker.configs.chart_config.CHART_SETTINGS')
++def test_generate_stacked_bar_chart(project_colors, chart_settings):
++    mock_data = {
++        'Mon': {'Project A': 120, 'Project B': 80},
++        'Tue': {'Project A': 90, 'Project B': 60}
++    }
++    expected_result = "Mon - Project A: 120 | Tue - Project A: 90"
++    result = generate_stacked_bar_chart(mock_data)
++    assert result == expected_result
