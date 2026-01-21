@@ -1,0 +1,87 @@
+diff --git a/index.html b/index.html
+index 8a7ed5e..d4f88b2 100644
+--- a/index.html
++++ b/index.html
+@@ -12,6 +12,7 @@
+             <h1>⏱️ Beautiful Timetracker</h1>
+             <p class="subtitle">Track your time beautifully</p>
+         </header>
+ 
+         <main>
+             <section class="timer-section">
+                 <div class="project-selector">
+                     <label for="project-select">Select project:</label>
+                     <div class="select-wrapper">
+                         <select id="project-select">
+                             <option value="">-- Choose a project --</option>
+                             <!-- Dynamic project options will be added here -->
+                         </select>
+                     </div>
+                     <div class="custom-project">
+                         <input type="text" id="custom-project-input" placeholder="Add a new project">
+                         <button id="add-project-btn" class="btn-secondary">+</button>
+                     </div>
+                 </div>
+-                <div class="timer-display">
++                <div class="timer-display">
+ 
+diff --git a/app.js b/app.js
+index 243d3f5..5a1d8ec 100644
+--- a/app.js
++++ b/app.js
+@@ -1,5 +1,6 @@
+ document.addEventListener('DOMContentLoaded', () => {
+     loadProjectsFromStorage();
+ 
++    document.getElementById('add-project-btn').addEventListener('click', handleAddProject);
+ });
+ 
+ function validateProjectName(name) {
+@@ -6,6 +7,34 @@
+     return name.length >= 1 && name.length <= 50;
+ }
+ 
++function generateUniqueColor() {
++    const letters = '0123456789ABCDEF';
++    let color = '#';
++    for (let i = 0; i < 6; i++) {
++        color += letters[Math.floor(Math.random() * 16)];
++    }
++    return color;
++}
++
++function addNewProject(name) {
++    if (!validateProjectName(name)) {
++        alert('Project name must be between 1 and 50 characters.');
++        return;
++    }
++
++    const projectColor = generateUniqueColor();
++    const projectOption = document.createElement('option');
++    projectOption.value = name;
++    projectOption.textContent = name;
++    projectOption.style.color = projectColor;
++    document.getElementById('project-select').appendChild(projectOption);
++
++    const projects = JSON.parse(localStorage.getItem('projects')) || [];
++    projects.push({ name, color: projectColor });
++    localStorage.setItem('projects', JSON.stringify(projects));
++}
++
+ function loadProjectsFromStorage() {
+     const projects = JSON.parse(localStorage.getItem('projects')) || [];
+ 
+     projects.forEach(project => {
+         const projectOption = document.createElement('option');
+         projectOption.value = project.name;
+         projectOption.textContent = project.name;
++        projectOption.style.color = project.color;
+         document.getElementById('project-select').appendChild(projectOption);
+     });
+ }
++
++function handleAddProject() {
++    const projectName = document.getElementById('custom-project-input').value.trim();
++    addNewProject(projectName);
++    document.getElementById('custom-project-input').value = ''; // Clear input field
++}

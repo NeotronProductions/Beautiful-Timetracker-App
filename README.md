@@ -20,12 +20,20 @@ A simple, beautiful **vanilla HTML/CSS/JavaScript** time tracker with **project 
 
 ### Option B (recommended): run a local server
 
+**Node.js Server (Recommended):**
 ```bash
 cd Beautiful-Timetracker-App
-python3 -m http.server 8000
+npm install  # First time only
+npm start    # Starts on port 9000
 ```
 
-Then open `http://localhost:8000`.
+**Or Python Server:**
+```bash
+cd Beautiful-Timetracker-App
+python3 -m http.server 9000
+```
+
+Then open `http://localhost:9000`.
 
 For more server options, see [`docs/SERVER_SETUP.md`](docs/SERVER_SETUP.md).
 
