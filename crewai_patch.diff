@@ -1,77 +1,94 @@
 diff --git a/index.html b/index.html
-index abcdef1..abcdef2 100644
+index 1234567..89abcde 100644
 --- a/index.html
 +++ b/index.html
-@@ -10,6 +10,8 @@
-                <div class="project-selector">
-                    <label for="project-select">Select project:</label>
-                    <div class="select-wrapper">
-                        <select id="project-select" aria-required="true" aria-label="Select project">
-+                            <option value="">-- Choose a project --</option>
-+                            <option value="Project A" style="background-color: #FFDDC1;">Project A</option>
-+                            <option value="Project B" style="background-color: #C8E5EA;">Project B</option>
-+                            <option value="Project C" style="background-color: #D9EAD3;">Project C</option>
-                        </select>
-                    </div>
-                    <div class="custom-project">
-                        <input type="text" id="custom-project-input" placeholder="Add a new project" aria-label="Add new project">
-                        <button id="add-project-btn" class="btn-secondary">+</button>
-                    </div>
+@@ -10,6 +10,10 @@
+                </select>
                 </div>
-
-                <div class="timer-display">
-                    <div class="current-time">
-                        <span id="timer">00:00:00</span>
+                <div class="custom-project">
++                    <span class="project-badge" data-color="#ff6347">Project A</span>
++                    <span class="project-badge" data-color="#4682b4">Project B</span>
++                    <span class="project-badge" data-color="#3cb371">Project C</span>
++
+                     <input type="text" id="custom-project-input" placeholder="Add a new project">
+                     <button id="add-project-btn" class="btn-secondary">+</button>
+                 </div>
+@@ -22,6 +26,7 @@
+                 <div class="timer-display">
+                     <div class="current-time">
+                         <span id="timer">00:00:00</span>
++                        <span id="selected-project"></span>
+                     </div>
+                 </div>
+             </section>
+@@ -43,6 +48,7 @@
+     <script src="app.js"></script>
+ </body>
+ </html>
++<style>.project-badge {display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px;}</style>
+ 
 diff --git a/app.js b/app.js
-index abcdef1..abcdef2 100644
+index 1234567..89abcde 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,6 +1,9 @@
- document.addEventListener('DOMContentLoaded', function() {
-     loadProjectsFromStorage();
+@@ -1,5 +1,6 @@
+ document.addEventListener('DOMContentLoaded', () => {
+     loadProjects();
++    highlightSelectedProject();
  
-+    document.getElementById('project-select').addEventListener('change', function() {
-+        updateProjectSelection(this.value);
-+    });
+     document.getElementById('project-select').addEventListener('change', selectProject);
  });
-
- function loadProjectsFromStorage() {
-@@ -8,6 +11,24 @@
-     const selectedProject = localStorage.getItem('selectedProject');
-     if (selectedProject) {
-         document.getElementById('project-select').value = selectedProject;
-+        highlightSelectedProject(selectedProject);
-     }
+ 
+     const projects = JSON.parse(localStorage.getItem('projects')) || ['Project A', 'Project B', 'Project C'];
+     const projectSelect = document.getElementById('project-select');
+ 
+         const option = document.createElement('option');
+         option.value = project;
+         option.textContent = project;
++        const badge = document.createElement('span');
++        badge.className = 'project-badge';
++        badge.style.backgroundColor = projectColors[project];
++        option.appendChild(badge);
+         projectSelect.appendChild(option);
+     });
+ });
+ function selectProject(event) {
+     const selectedProject = event.target.value;
+     document.getElementById('selected-project').textContent = selectedProject;
+     saveProjectSelection(selectedProject);
  }
-
-+function updateProjectSelection(newProject) {
-+    localStorage.setItem('selectedProject', newProject);
-+    highlightSelectedProject(newProject);
+-function saveProjectSelection(project) {
+-    localStorage.setItem('activeProject', project);
+-}
++const projectColors = {
++    'Project A': '#ff6347',
++    'Project B': '#4682b4',
++    'Project C': '#3cb371'
++};
++function highlightSelectedProject() {
++    const activeProject = localStorage.getItem('activeProject');
++    if (activeProject) {
++        const projectSelect = document.getElementById('project-select');
++        projectSelect.value = activeProject;
++        document.getElementById('selected-project').textContent = activeProject;
++    }
 +}
-+
-+function highlightSelectedProject(project) {
-+    const options = document.querySelectorAll('#project-select option');
-+    options.forEach(option => {
-+        option.selected = option.value === project;
-+    });
-+}
-+
-+document.getElementById('project-select').addEventListener('keydown', handleKeyboardNavigation);
-+
-+function handleKeyboardNavigation(event) {
-+    // Logic to handle keyboard navigation goes here
++function saveProjectSelection(project) {
++    localStorage.setItem('activeProject', project);
 +}
 diff --git a/styles.css b/styles.css
-index abcdef1..abcdef2 100644
+index 1234567..89abcde 100644
 --- a/styles.css
 +++ b/styles.css
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,7 @@
  body {
      font-family: Arial, sans-serif;
+     background-color: #f9f9f9;
  }
- 
-+.select-wrapper select {
-+    width: 100%; /* Ensure full width for mobile responsiveness */
++
++.project-badge {
++    display: inline-block;
++    width: 10px;
++    height: 10px;
++    border-radius: 50%;
  }
- 
- .current-time {

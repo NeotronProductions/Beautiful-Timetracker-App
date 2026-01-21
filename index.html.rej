@@ -1,0 +1,29 @@
+--- index.html
++++ index.html
+@@ -10,6 +10,10 @@
+                </select>
+                </div>
+                <div class="custom-project">
++                    <span class="project-badge" data-color="#ff6347">Project A</span>
++                    <span class="project-badge" data-color="#4682b4">Project B</span>
++                    <span class="project-badge" data-color="#3cb371">Project C</span>
++
+                     <input type="text" id="custom-project-input" placeholder="Add a new project">
+                     <button id="add-project-btn" class="btn-secondary">+</button>
+                 </div>
+@@ -22,6 +26,7 @@
+                 <div class="timer-display">
+                     <div class="current-time">
+                         <span id="timer">00:00:00</span>
++                        <span id="selected-project"></span>
+                     </div>
+                 </div>
+             </section>
+@@ -43,6 +48,7 @@
+     <script src="app.js"></script>
+ </body>
+ </html>
++<style>.project-badge {display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px;}</style>
+ 
+ 
+ 
