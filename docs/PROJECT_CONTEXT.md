@@ -253,3 +253,20 @@ export const Projects = {
 ```
 
 This context helps CrewAI agents understand the project structure and produce code that matches the vanilla JavaScript architecture!
+
+## ⚠️ IMPORTANT FOR CREWAI AGENTS
+
+**BEFORE implementing any features, you MUST:**
+
+1. **Read this entire file** (`PROJECT_CONTEXT.md`)
+2. **Review the actual codebase:**
+   - Read `index.html` to understand DOM structure
+   - Read `app.js` to understand JavaScript patterns
+   - Read `styles.css` to understand styling approach
+3. **Check `implementations/` folder** for similar features
+4. **Verify you're writing JavaScript** (NOT Python, NOT TypeScript)
+5. **Follow existing code patterns** exactly
+
+**See `docs/CREWAI_SETUP.md` for detailed setup instructions.**
+
+**See `.crewai-review-checklist.md` for a quick review checklist.**

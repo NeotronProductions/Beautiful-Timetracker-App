@@ -27,19 +27,38 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000`.
 
-For more server options, see `SERVER_SETUP.md`.
+For more server options, see [`docs/SERVER_SETUP.md`](docs/SERVER_SETUP.md).
 
-## Project structure (current)
+## Project structure
 
 ```
 Beautiful-Timetracker-App/
-├── index.html
-├── styles.css
-├── app.js
-└── README.md
+├── index.html              # Main HTML entry point
+├── styles.css              # Main stylesheet
+├── app.js                  # Main application logic
+├── README.md               # This file
+├── .gitignore              # Git ignore rules
+│
+├── docs/                   # Documentation
+│   ├── GETTING_STARTED.md
+│   ├── PROJECT_CONTEXT.md
+│   ├── SERVER_SETUP.md
+│   ├── PULL_REQUEST_GUIDE.md
+│   └── ...
+│
+├── implementations/        # Issue implementation plans
+│   ├── issue_528_plan.md
+│   ├── issue_542_plan.md
+│   └── ...
+│
+├── patches/                # Patch files
+│   └── crewai_patch.diff
+│
+└── archive/                # Legacy files
+    └── script.js           # Previous version (replaced by app.js)
 ```
 
-Note: `script.js` exists from an earlier iteration but `index.html` currently loads `app.js`.
+See [`docs/README.md`](docs/README.md) for documentation details.
 
 ## Browser compatibility
 
