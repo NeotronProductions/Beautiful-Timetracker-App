@@ -1,103 +1,79 @@
 diff --git a/index.html b/index.html
-index 1234567..89abcde 100644
+index 2c14ef3..6c59a73 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,9 +1,30 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Beautiful Timetracker</title>
-     <link rel="stylesheet" href="styles.css">
-+    <link rel="stylesheet" href="https://unpkg.com/@radix-ui/react-select/dist/index.css">
- </head>
- <body>
-     <div class="container">
-         <header>
-             <h1>⏱️ Beautiful Timetracker</h1>
-             <p class="subtitle">Track your time beautifully</p>
-         </header>
- 
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
-                     <label for="project-select">Select project:</label>
-+                    <div id="project-dropdown" class="select-wrapper">
-+                        <div class="radix-select">
-+                            <!-- Radix Select dropdown will be injected here -->
-+                        </div>
-+                    </div>
+@@ -6,7 +6,8 @@
+                             <option value="Project C">Project C</option>
+                         </select>
+                     </div>
++                    <div id="project-list"></div>
                      <div class="custom-project">
                          <input type="text" id="custom-project-input" placeholder="Add a new project">
                          <button id="add-project-btn" class="btn-secondary">+</button>
                      </div>
                  </div>
- 
++                <button id="delete-project-btn" class="btn-secondary">Delete Project</button>
                  <div class="timer-display">
                      <div class="current-time">
                          <span id="timer">00:00:00</span>
- 
-diff --git a/styles.css b/styles.css
-index 9876543..fedcba9 100644
---- a/styles.css
-+++ b/styles.css
-@@ -1,6 +1,16 @@
- body {
-     font-family: Arial, sans-serif;
- }
- 
-+.select-wrapper {
-+    position: relative;
-+    display: inline-block;
-+}
-+
-+.radix-select {
-+    border: 1px solid #ccc;
-+    border-radius: 4px;
-+    padding: 10px;
-+}
-+
- .btn-secondary {
-     background-color: #007bff;
-     color: white;
-     border: none;
+
 diff --git a/app.js b/app.js
-index abcdef0..1234567 100644
+index bd2eaf8..c08cafb 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,6 +1,31 @@
- // Main application logic
+@@ -1,6 +1,7 @@
+ const projects = JSON.parse(localStorage.getItem('projects')) || [];
+ const activeTimer = null;
+
+ document.addEventListener('DOMContentLoaded', () => {
++    renderProjects();
+     document.getElementById('add-project-btn').addEventListener('click', addProject);
+     document.getElementById('delete-project-btn').addEventListener('click', deleteSelectedProject);
+ });
  
-+class ProjectDropdown {
-+    constructor() {
-+        this.projects = this.fetchProjects();
-+        this.render();
-+    }
-+
-+    fetchProjects() {
-+        // Fetch projects from localStorage or default projects
-+        return JSON.parse(localStorage.getItem('projects')) || [
-+            { name: 'Project A', color: '#ff0000' },
-+            { name: 'Project B', color: '#00ff00' },
-+            { name: 'Project C', color: '#0000ff' }
-+        ];
-+    }
-+
-+    render() {
-+        const dropdown = document.querySelector('#project-dropdown .radix-select');
-+        dropdown.innerHTML = this.projects.map(project => `
-+            <div style="color: ${project.color};">${project.name}</div>
-+        `).join('');
-+        // Add event listener for update functionality (assuming you have Radix Select setup)
-+    }
-+}
-+
-+document.addEventListener('DOMContentLoaded', () => {
-+    new ProjectDropdown();
-+});
-+
- // Other application logic continues...
-+
- const timerElement = document.getElementById('timer');
- 
+ function renderProjects() {
+     const projectList = document.getElementById('project-list');
+     projectList.innerHTML = '';
+     projects.forEach(project => {
+         const projectDiv = document.createElement('div');
+         projectDiv.textContent = project;
+         const deleteBtn = document.createElement('button');
+         deleteBtn.textContent = 'Delete';
+         deleteBtn.onclick = () => showDeleteConfirmation(project);
+         projectDiv.appendChild(deleteBtn);
+         projectList.appendChild(projectDiv);
+     });
+ }
+
+ function showDeleteConfirmation(projectName) {
+     if (confirm(`Are you sure you want to delete "${projectName}"?`)) {
+         deleteProject(projectName);
+     }
+ }
+
+ function deleteProject(projectName) {
+     if (activeTimer !== null) {
+         alert('Cannot delete project while timer is running');
+         return;
+     }
+
+     const index = projects.indexOf(projectName);
+     if (index !== -1) {
+         projects.splice(index, 1);
+         localStorage.setItem('projects', JSON.stringify(projects));
+         updateSessions(projectName);
+         renderProjects();
+     }
+ }
+
+ function updateSessions(projectName) {
+     const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
+     sessions.forEach(session => {
+         if (session.project === projectName) {
+             session.project = 'Deleted Project';
+         }
+     });
+     localStorage.setItem('sessions', JSON.stringify(sessions));
+ }
+
++// Add additional test cases if necessary for testing new functionality
