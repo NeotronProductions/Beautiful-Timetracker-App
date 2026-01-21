@@ -1,41 +1,50 @@
 # Beautiful Timetracker App ⏱️
 
-A beautiful, minimal, and functional time tracking web application built with vanilla HTML, CSS, and JavaScript.
+A simple, beautiful **vanilla HTML/CSS/JavaScript** time tracker with **project selection**, **daily summaries**, and **local-first storage** (localStorage).
 
 ## Features
 
-- ✨ Modern and beautiful gradient UI design
-- ⏱️ Start/stop timer functionality
-- 📝 Track tasks with custom names
-- 💾 Persistent storage using localStorage
-- 📊 View all time entries with timestamps
-- 🗑️ Delete individual time entries
-- 📱 Fully responsive design for mobile and desktop
+- **Project-based tracking**: pick a project and start/stop the timer
+- **Custom projects**: add your own project names
+- **Daily summary**: totals per project for “today”
+- **History**: saved entries list with timestamps
+- **Edit & delete**: adjust durations or remove entries
+- **Local-first**: data stays in your browser via localStorage
+- **No build step**: static files only
 
-## Usage
+## Getting started
 
-Simply open `index.html` in your web browser to start using the app.
+### Option A: open directly
 
-1. Enter a task name in the input field
-2. Click "Start" to begin tracking time
-3. Click "Stop" when you're done
-4. View all your time entries below
-5. Delete entries as needed
+- Open `index.html` in your browser.
 
-## Technical Details
+### Option B (recommended): run a local server
 
-- **No dependencies** - Pure vanilla JavaScript, HTML, and CSS
-- **localStorage** - All data is stored locally in your browser
-- **Responsive** - Works on all screen sizes
-- **Modern design** - Beautiful gradient themes and smooth animations
+```bash
+cd Beautiful-Timetracker-App
+python3 -m http.server 8000
+```
 
-## Browser Compatibility
+Then open `http://localhost:8000`.
 
-Works in all modern browsers that support ES6 and localStorage:
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
+For more server options, see `SERVER_SETUP.md`.
+
+## Project structure (current)
+
+```
+Beautiful-Timetracker-App/
+├── index.html
+├── styles.css
+├── app.js
+└── README.md
+```
+
+Note: `script.js` exists from an earlier iteration but `index.html` currently loads `app.js`.
+
+## Browser compatibility
+
+Works in modern browsers that support ES6 and localStorage (Chrome/Edge, Firefox, Safari).
 
 ## License
 
-MIT License
+MIT
