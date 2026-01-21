@@ -1,0 +1,9 @@
+# CrewAI Requirements
+# Install with: pip install -r requirements.txt
+
+crewai>=0.1.0
+python-dotenv>=1.0.0
+
+# Optional but recommended
+openai>=1.0.0  # If using OpenAI models
+anthropic>=0.3.0  # If using Claude models
