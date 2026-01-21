@@ -1,31 +1,77 @@
 diff --git a/index.html b/index.html
-index abcd123..efgh456 100644
+index abcdef1..abcdef2 100644
 --- a/index.html
 +++ b/index.html
-@@ -16,8 +16,12 @@
-                     <option value="">-- Choose a project --</option>
-                     <option value="Project A" style="color: #ff4c4c;">Project A</option>
-                     <option value="Project B" style="color: #4caf50;">Project B</option>
-                     <option value="Project C" style="color: #2196F3;">Project C</option>
-+                    <option value="Project D" style="color: #ffeb3b;">Project D</option>
-                 </select>
-             </div>
-             <div class="custom-project">
-                 <input type="text" id="custom-project-input" placeholder="Add a new project">
-                 <button id="add-project-btn" class="btn-secondary">+</button>
-             </div>
-         </div>
+@@ -10,6 +10,8 @@
+                <div class="project-selector">
+                    <label for="project-select">Select project:</label>
+                    <div class="select-wrapper">
+                        <select id="project-select" aria-required="true" aria-label="Select project">
++                            <option value="">-- Choose a project --</option>
++                            <option value="Project A" style="background-color: #FFDDC1;">Project A</option>
++                            <option value="Project B" style="background-color: #C8E5EA;">Project B</option>
++                            <option value="Project C" style="background-color: #D9EAD3;">Project C</option>
+                        </select>
+                    </div>
+                    <div class="custom-project">
+                        <input type="text" id="custom-project-input" placeholder="Add a new project" aria-label="Add new project">
+                        <button id="add-project-btn" class="btn-secondary">+</button>
+                    </div>
+                </div>
+
+                <div class="timer-display">
+                    <div class="current-time">
+                        <span id="timer">00:00:00</span>
+diff --git a/app.js b/app.js
+index abcdef1..abcdef2 100644
+--- a/app.js
++++ b/app.js
+@@ -1,6 +1,9 @@
+ document.addEventListener('DOMContentLoaded', function() {
+     loadProjectsFromStorage();
  
-@@ -35,7 +39,11 @@
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
-                     <label for="project-select">Select project:</label>
--                    <div class="select-wrapper">
-+                    <div class="select-wrapper" tabindex="0">
-+                        <span class="selected-project" id="selected-project-indicator"></span>
-+                        <button class="dropdown-toggle" aria-expanded="false" aria-haspopup="true"></button>
-+                        <ul id="project-list" role="menu" aria-labelledby="project-select">
-+                        </ul>
-                     </div>
-                 </div>
++    document.getElementById('project-select').addEventListener('change', function() {
++        updateProjectSelection(this.value);
++    });
+ });
+
+ function loadProjectsFromStorage() {
+@@ -8,6 +11,24 @@
+     const selectedProject = localStorage.getItem('selectedProject');
+     if (selectedProject) {
+         document.getElementById('project-select').value = selectedProject;
++        highlightSelectedProject(selectedProject);
+     }
+ }
+
++function updateProjectSelection(newProject) {
++    localStorage.setItem('selectedProject', newProject);
++    highlightSelectedProject(newProject);
++}
++
++function highlightSelectedProject(project) {
++    const options = document.querySelectorAll('#project-select option');
++    options.forEach(option => {
++        option.selected = option.value === project;
++    });
++}
++
++document.getElementById('project-select').addEventListener('keydown', handleKeyboardNavigation);
++
++function handleKeyboardNavigation(event) {
++    // Logic to handle keyboard navigation goes here
++}
+diff --git a/styles.css b/styles.css
+index abcdef1..abcdef2 100644
+--- a/styles.css
++++ b/styles.css
+@@ -1,5 +1,6 @@
+ body {
+     font-family: Arial, sans-serif;
+ }
+ 
++.select-wrapper select {
++    width: 100%; /* Ensure full width for mobile responsiveness */
+ }
+ 
+ .current-time {
