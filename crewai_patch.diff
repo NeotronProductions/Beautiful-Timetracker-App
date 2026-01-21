@@ -1,175 +1,112 @@
 diff --git a/index.html b/index.html
-index 714a13d..b12b542 100644
+index 4e3e695..2a5b4a1 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,7 +1,8 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Beautiful Timetracker</title>
-     <link rel="stylesheet" href="styles.css">
- </head>
- <body>
-     <div class="container">
-         <header>
-             <h1>⏱️ Beautiful Timetracker</h1>
-             <p class="subtitle">Track your time beautifully</p>
-         </header>
- 
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
-                     <label for="project-select">Select project:</label>
-                     <div class="select-wrapper">
-                         <select id="project-select" aria-label="Select a project" tabindex="0">
-                             <option value="" data-color="">-- Choose a project --</option>
-                             <option value="Project A" data-color="#FF5733">Project A</option>
-                             <option value="Project B" data-color="#33C1FF">Project B</option>
-                             <option value="Project C" data-color="#FF33A8">Project C</option>
-                         </select>
-                     </div>
-                     <div class="custom-project">
-                         <input type="text" id="custom-project-input" placeholder="Add a new project">
-                         <button id="add-project-btn" class="btn-secondary">+</button>
-                     </div>
+@@ -10,7 +10,12 @@
+                         <option value="Project A">Project A</option>
+                         <option value="Project B">Project B</option>
+                         <option value="Project C">Project C</option>
+-                        <option value="">-- Choose a project --</option>
++                        <option value="" disabled selected>-- Choose a project --</option>
++                        <option value="Project A" data-color="red">Project A</option>
++                        <option value="Project B" data-color="blue">Project B</option>
++                        <option value="Project C" data-color="green">Project C</option>
++                    </select>
++                </div>
++                <div class="custom-project">
++                    <input type="text" id="custom-project-input" placeholder="Add a new project">
++                    <button id="add-project-btn" class="btn-secondary">+</button>
                  </div>
+                </div>
  
-                 <div class="timer-display">
-                     <div class="current-time">
-                         <span id="timer">00:00:00</span>
-                     </div>
-                 </div>
-             </section>
-         </main>
-     </div>
-     <script src="app.js"></script>
- </body>
- </html>
 diff --git a/styles.css b/styles.css
-index 609bfc3..94d76dd 100644
+index a09a5f7..b4babf5 100644
 --- a/styles.css
 +++ b/styles.css
-@@ -1,5 +1,10 @@
- body {
-     font-family: Arial, sans-serif;
-     background-color: #f4f4f4;
+@@ -5,6 +5,12 @@
+ 
+ .project-selector {
+     display: flex;
++    flex-wrap: wrap;
+     margin-bottom: 20px;
  }
  
- .select-wrapper {
-     display: inline-block;
-     position: relative;
- }
- 
-+select option {
-+    padding: 8px;
++.project-selector select option[data-color="red"] {
++    background-color: #ffcccc;
 +}
 +
-+select option[data-color] {
-+    color: transparent; /* Hide text color */
-+    background-color: inherit; /* Use parent's background */
-+    position: relative;
++.project-selector select option[data-color="blue"] {
++    background-color: #cce5ff;
++}
++
++.project-selector select option[data-color="green"] {
++    background-color: #d4edda;
 +}
  
- .btn-secondary {
-     background-color: #007BFF;
-     color: white;
+ .custom-project {
+     display: flex;
+     align-items: center;
  }
  
- .highlighted {
-     font-weight: bold;
-     border: 2px solid #FFD700; /* Highlight border */
+ .timer-display {
+     /* Existing styles */
  }
+ 
 diff --git a/app.js b/app.js
-index f3b59ea..39531bc 100644
+index f1a9052..8e800b2 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,48 @@
- document.addEventListener('DOMContentLoaded', () => {
-     const projectSelect = document.getElementById('project-select');
+@@ -1,10 +1,53 @@
+ // Main application logic
++const projects = [
++    { name: 'Project A', color: 'red' },
++    { name: 'Project B', color: 'blue' },
++    { name: 'Project C', color: 'green' }
++];
  
-+    function saveSelectedProject(project) {
-+        localStorage.setItem('selectedProject', project);
-+    }
-+
-+    function getSelectedProject() {
-+        return localStorage.getItem('selectedProject');
-+    }
-+
-+    function highlightSelectedProject(project) {
-+        Array.from(projectSelect.options).forEach(option => {
-+            if (option.value === project) {
-+                option.classList.add('highlighted');
-+            } else {
-+                option.classList.remove('highlighted');
-+            }
-+        });
-+    }
-+
-+    function setAccessibility() {
-+        projectSelect.setAttribute('role', 'combobox');
-+        projectSelect.setAttribute('aria-expanded', 'false');
-+        projectSelect.setAttribute('aria-haspopup', 'listbox');
-+
-+        // Suppress default behavior on select
-+        projectSelect.addEventListener('focus', () => {
-+            projectSelect.setAttribute('aria-expanded', 'true');
-+        });
-+        projectSelect.addEventListener('blur', () => {
-+            projectSelect.setAttribute('aria-expanded', 'false');
-+        });
-+    }
-+
-     function loadSelectedProject() {
-         const selectedProject = getSelectedProject();
-         if (selectedProject) {
-             projectSelect.value = selectedProject;
-             highlightSelectedProject(selectedProject);
-         }
-     }
- 
-+    projectSelect.addEventListener('change', (event) => {
-+        const selectedProject = event.target.value;
-+        saveSelectedProject(selectedProject);
-+        highlightSelectedProject(selectedProject);
+ function updateProjectDropdown(projects) {
++    const select = document.getElementById('project-select');
++    projects.forEach(project => {
++        const option = document.createElement('option');
++        option.value = project.name;
++        option.text = project.name;
++        option.setAttribute('data-color', project.color);
++        select.appendChild(option);
 +    });
-+
-+    projectSelect.addEventListener('keydown', (event) => {
-+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-+            // Handle keyboard navigation
-+            let newIndex = event.key === "ArrowDown" ? 
-+                Math.min(projectSelect.selectedIndex + 1, projectSelect.options.length - 1) :
-+                Math.max(projectSelect.selectedIndex - 1, 0);
-+            projectSelect.selectedIndex = newIndex;
-+            saveSelectedProject(projectSelect.value);
-+            highlightSelectedProject(projectSelect.value);
-+            event.preventDefault();
++    highlightSelectedProject();
++}
+ 
++function highlightSelectedProject() {
++    const select = document.getElementById('project-select');
++    const selectedValue = localStorage.getItem('selectedProject');
++    Array.from(select.options).forEach(option => {
++        if (option.value === selectedValue) {
++            option.selected = true;
++            select.style.backgroundColor = option.getAttribute('data-color');
 +        }
 +    });
++}
++
++function handleKeyboardNavigation(event) {
++    const select = document.getElementById('project-select');
++    if (event.key === 'ArrowDown') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex + 1) % select.options.length;
++    } else if (event.key === 'ArrowUp') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex - 1 + select.options.length) % select.options.length;
++    }
++}
  
-     loadSelectedProject();
-+    setAccessibility();
+ document.addEventListener('DOMContentLoaded', () => {
++    updateProjectDropdown(projects);
+     const select = document.getElementById('project-select');
+     select.addEventListener('change', (event) => {
+         const selectedProject = event.target.value;
+         localStorage.setItem('selectedProject', selectedProject);
+         highlightSelectedProject();
+     });
++    
++    document.addEventListener('keydown', handleKeyboardNavigation);
  });
-diff --git a/tests/app.test.js b/tests/app.test.js
-+++ b/tests/app.test.js
-@@ -0,0 +1,15 @@
-+describe('Project Selector', () => {
-+    beforeEach(() => {
-+        localStorage.clear();
-+    });
 +
-+    test('saveSelectedProject saves to localStorage', () => {
-+        const project = 'Project A';
-+        saveSelectedProject(project);
-+        expect(localStorage.getItem('selectedProject')).toBe(project);
-+    });
-+
-+    test('getSelectedProject retrieves from localStorage', () => {
-+        const project = 'Project B';
-+        localStorage.setItem('selectedProject', project);
-+        expect(getSelectedProject()).toBe(project);
-+    });
-+
-+    // Additional UI and accessibility tests would go here...
-+});

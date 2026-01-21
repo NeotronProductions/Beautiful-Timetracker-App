@@ -1,512 +1,402 @@
 # Implementation Plan for Issue #707
 
-**Generated:** 2026-01-21T20:50:15.127294
+**Generated:** 2026-01-21T21:53:55.269989
 
 ## Full Crew Output
 
 ### Code Review Feedback
 
-#### Correctness
-- The code generally appears to function as intended in managing project selection and maintaining accessibility features.
-- Ensure that the functions `saveSelectedProject` and `getSelectedProject` are defined in a scope that allows them to be tested. In the current test file, they do not seem to be in scope, which will lead to errors in the tests.
+**Correctness:**
+- In the JavaScript file, the `updateProjectDropdown` function should first clear any existing options before populating the dropdown with new projects. This ensures that old projects do not persist in the dropdown if this function is called multiple times.
+- The `highlightSelectedProject` function is called after options are appended in `updateProjectDropdown`. This assumes that `localStorage` has the correct data. Ensure this data is set and handled correctly to avoid null values.
 
-#### Security
-- There are no apparent security issues in the provided code. However, consider implementing input validation when adding a custom project name to prevent potential XSS if it is rendered in the DOM directly.
+**Security:**
+- Since user input can be added via the custom project input, ensure to handle this input safely to prevent XSS attacks. This can be done by sanitizing the input before using it.
+- Always validate and sanitize any data retrieved from `localStorage`.
 
-#### Edge Cases
-- When saving a custom project, ensure that the input does not allow blank or invalid names.
-- When retrieving the selected project from localStorage, consider handling cases where no project is selected gracefully. For example, check if the returned value is `null` or `''`.
-- The `highlighted` class relies on DOM attributes and CSS styles. Test how it behaves when options are added/removed and ensure any selected project still highlights appropriately.
+**Edge Cases:**
+- Consider what happens if the user enters a name for a new project that already exists in the dropdown. You should check for duplicates before adding new projects to the dropdown or store.
+- If the user deletes the selected item from localStorage or it is never set, the application should handle this scenario gracefully without throwing errors.
 
-#### Style and Maintainability
-- Maintain consistency in string quotes. It is recommended to choose single or double quotes and stick to one throughout the code.
-- Add comments to complex sections, particularly within functions that handle interactions to increase readability and maintainability.
-- Use more descriptive function names, particularly `setAccessibility`. Consider renaming it to `initializeAccessibilityAttributes` to better convey its purpose.
+**Style and Maintainability:**
+- The JavaScript could be refactored to create a dedicated function to set the background color based on the selected project. Having a separate function can help keep the code DRY (Don't Repeat Yourself).
+- Consider separating concerns further, e.g., moving DOM manipulations into functions dedicated solely to that purpose, which would enhance readability.
+- The CSS class names `.btn-secondary` could be more descriptive or context-specific.
 
-### Suggested Changes
-- Move `saveSelectedProject` and `getSelectedProject` functions into the global scope or restructure the test file to import them correctly.
-- Add input validation within the custom project input functionality to handle blank submissions and potential XSS attacks.
-- Enhance accessibility further by ensuring the options are keyboard navigable and ensure that changes to selections update the accessibility attributes effectively.
-- Consider adding tests for:
-  - Attempting to save an empty custom project name.
-  - Behavior when localStorage doesn't contain an expected project.
-  - Functional integrity of keyboard navigation.
+**Suggested Changes:**
+- Modify `updateProjectDropdown` to clear the dropdown options:
+  ```javascript
+  select.innerHTML = ''; // Clear existing options
+  ```
 
-### Conclusion
-With these changes, the code will be more robust against edge cases, ensure better security practices, and remain maintainable over time. Always ensure that tests cover potential user behaviors, especially for inputs that modify the UI or application state.
+- Update the custom project input handling for XSS:
+  ```javascript
+  const sanitizedInput = customProjectInput.value.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+  ```
+
+- Introduce duplicate checking before adding new projects:
+  ```javascript
+  if (!projects.some(p => p.name === sanitizedInput)) {
+      projects.push({ name: sanitizedInput, color: 'default-color' }); // Determine a default color
+      updateProjectDropdown(projects); // Refresh dropdown
+  }
+  ```
+
+- Create a separate function to set background color in `highlightSelectedProject`:
+  ```javascript
+  function setBackgroundColor(select, color) {
+      select.style.backgroundColor = color;
+  }
+  ```
+
+By addressing the points above, the patch will be more robust, maintainable, and secure, ensuring the user's experience is seamless and error-free.
 
 ### Task 1 Output
 
-1) User Story:  
-As a **user**, I want **to select an active project from a dropdown showing all available projects with color indicators**, so that **I can track time for the correct project and easily switch between projects**.
+**User Story:**
+As a user, I want to select an active project from a dropdown showing all available projects with color indicators, so that I can track time for the correct project and easily switch between projects.
 
-2) Acceptance Criteria:  
-- The dropdown lists all available projects with distinct color badges representing each project's status.  
-- The selected project is visually highlighted in the dropdown.  
-- The user's selection of a project persists across page refreshes.  
-- The dropdown selection and navigation functionality works seamlessly with keyboard navigation.  
-- The project selection feature meets accessibility standards (WCAG 2.1 AA).  
-- The feature is responsive and functions correctly on mobile devices.  
-- All automated tests pass without any issues.
+**Acceptance Criteria:**
+- The dropdown lists all projects available to the user with corresponding color badges indicating project status.
+- The selected project in the dropdown is visually highlighted to confirm the user's selection.
+- The selected project persists across page refreshes, ensuring the user's choice remains consistent during their session.
+- The dropdown selection process is fully functional with keyboard navigation, allowing users to navigate and select projects using keyboard shortcuts.
+- The dropdown implementation meets accessibility standards (WCAG 2.1 AA).
+- The design is responsive and functions properly on mobile devices.
+- All unit and integration tests pass successfully prior to deployment.
 
-3) Out of Scope:  
-- Displaying additional project details or descriptions in the dropdown.  
-- Integrating user authentication or permissions related to project access.  
-- Implementing a search or filtering feature within the dropdown for projects.  
-- Providing multi-select functionality for project selection.  
-- Adding analytics to track project selection usage.
+**Out of Scope:**
+- Integration with external project management tools or APIs.
+- Implementing user permission levels for project visibility (only available projects for the user will be shown).
+- Adding custom projects or edit functionality within the dropdown.
+- Color blindness accessibility features beyond ensuring color indicators are present.
 
-4) Risks/unknowns:  
-- There may be unforeseen accessibility issues that arise during testing.  
-- Performance issues could occur if the list of projects becomes extensive.  
-- User distraction may arise due to too many colors or ineffective color choices.  
-- There could be a need for back-end changes to support persistence of project selection across sessions.  
-- Possible complications with different screen reader functionalities when navigating the dropdown.
+**Risks/Unknowns:**
+- There may be a risk of performance issues if the list of projects becomes very large.
+- Unknown how users react to keyboard navigation implementation, as it may require additional user feedback.
+- Possible inconsistencies across browsers, especially with regard to the appearance and functionality of dropdowns.
+
+This user story, with the detailed acceptance criteria and considerations for scope and risks, provides a comprehensive approach to implementing the feature of selecting an active project effectively, improving time tracking for users.
 
 ### Task 2 Output
 
-### Minimal Implementation Plan
-1. **Update the Project Selector**:
-   - Modify the existing dropdown to include color indicators for each project.
-   - Ensure the currently selected project is visually highlighted.
+### Minimal Implementation Plan:
+1. **Update the project selector dropdown in `index.html` to include color indicators for each project**.
+2. **Modify the styling in `styles.css` to visually differentiate selected projects with color badges and ensure mobile responsiveness**.
+3. **Enhance the JavaScript logic in `app.js` to manage project selection, storing the selected project in localStorage, and implementing keyboard navigation**.
+4. **Include accessibility features (e.g., ARIA attributes) in the dropdown to meet WCAG 2.1 AA standards**.
+5. **Create unit tests to cover the project selection functionality and keyboard navigation behavior**.
 
-2. **Implement Persistence**:
-   - Utilize localStorage to save the user's selected project so it persists across page refreshes.
-
-3. **Enhance Accessibility**:
-   - Ensure that the dropdown meets WCAG 2.1 AA standards.
-   - Implement keyboard navigation support.
-
-4. **Add Responsiveness**:
-   - Ensure the dropdown functions correctly on mobile devices.
-
-5. **Testing**:
-   - Write automated tests to cover the functionality of the dropdown, including accessibility tests if feasible.
-
-### Files to Change
+### Files to Change:
 - `index.html`
-  - Update the dropdown to include color badges and modify its structure for highlighting the selected project.
 - `styles.css`
-  - Add styles for color indicators and modify styles for the selected project to improve visual recognition.
 - `app.js`
-  - Implement logic to save the selected project to localStorage and retrieve it upon loading the page.
-  - Add event listeners for keyboard navigation.
-  - Ensure that the dropdown updates visually when a project is selected.
 
-### New Functions/Classes/Modules
-- **Function `saveSelectedProject(project)`**:
-  - Saves the selected project to localStorage.
+### New Functions/Classes/Modules:
+- **New functions in `app.js`:**
+  - `updateProjectDropdown(projects)` - To dynamically populate the dropdown with projects and their color indicators.
+  - `highlightSelectedProject()` - To highlight the user-selected project in the dropdown.
+  - `handleKeyboardNavigation()` - To enable keyboard navigation through the dropdown.
+  
+### Test Approach:
+1. **Unit Tests:**
+   - Test `updateProjectDropdown()` to ensure projects are added correctly with color indicators.
+   - Test `highlightSelectedProject()` to verify that the selected project is visually highlighted.
+   - Test `handleKeyboardNavigation()` to ensure keyboard shortcuts allow navigation through the projects.
+  
+2. **Integration Tests:**
+   - Simulate user interactions with the dropdown to validate that selections persist in localStorage across page refreshes.
+   - Check the dropdown's accessibility and responsiveness on different devices and browsers.
 
-- **Function `getSelectedProject()`**:
-  - Retrieves the selected project from localStorage upon initialization.
+3. **Manual Testing:**
+   - Confirm the visual appearance of the dropdown across various browsers.
+   - Test keyboard navigation functionality for accessibility compliance.
 
-- **Function `highlightSelectedProject(project)`**:
-  - Updates the dropdown to visually highlight the currently selected project.
-
-- **Function `setAccessibility()`**:
-  - Sets roles and aria attributes to meet accessibility standards.
-
-### Test Approach
-- Use automated testing tools (like Jest) to create unit tests for:
-  - `saveSelectedProject()`: Ensure it correctly saves data to localStorage.
-  - `getSelectedProject()`: Ensure it retrieves the correct data upon page load.
-  - UI tests with a focus on accessibility to ensure dropdown meets WCAG 2.1 AA standards.
-  - Functional tests to validate keyboard navigation works as expected.
-- Conduct manual testing on different devices to ensure responsive design and functionality.
+By following this plan, the user will be able to select an active project efficiently while ensuring consistent and accessible user experience.
 
 ### Task 3 Output
 
 ```diff
 diff --git a/index.html b/index.html
-index 714a13d..b12b542 100644
+index 4e3e695..2a5b4a1 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,7 +1,8 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Beautiful Timetracker</title>
-     <link rel="stylesheet" href="styles.css">
- </head>
- <body>
-     <div class="container">
-         <header>
-             <h1>⏱️ Beautiful Timetracker</h1>
-             <p class="subtitle">Track your time beautifully</p>
-         </header>
- 
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
-                     <label for="project-select">Select project:</label>
-                     <div class="select-wrapper">
-                         <select id="project-select" aria-label="Select a project" tabindex="0">
-                             <option value="" data-color="">-- Choose a project --</option>
-                             <option value="Project A" data-color="#FF5733">Project A</option>
-                             <option value="Project B" data-color="#33C1FF">Project B</option>
-                             <option value="Project C" data-color="#FF33A8">Project C</option>
-                         </select>
-                     </div>
-                     <div class="custom-project">
-                         <input type="text" id="custom-project-input" placeholder="Add a new project">
-                         <button id="add-project-btn" class="btn-secondary">+</button>
-                     </div>
+@@ -10,7 +10,12 @@
+                         <option value="Project A">Project A</option>
+                         <option value="Project B">Project B</option>
+                         <option value="Project C">Project C</option>
+-                        <option value="">-- Choose a project --</option>
++                        <option value="" disabled selected>-- Choose a project --</option>
++                        <option value="Project A" data-color="red">Project A</option>
++                        <option value="Project B" data-color="blue">Project B</option>
++                        <option value="Project C" data-color="green">Project C</option>
++                    </select>
++                </div>
++                <div class="custom-project">
++                    <input type="text" id="custom-project-input" placeholder="Add a new project">
++                    <button id="add-project-btn" class="btn-secondary">+</button>
                  </div>
+                </div>
  
-                 <div class="timer-display">
-                     <div class="current-time">
-                         <span id="timer">00:00:00</span>
-                     </div>
-                 </div>
-             </section>
-         </main>
-     </div>
-     <script src="app.js"></script>
- </body>
- </html>
 diff --git a/styles.css b/styles.css
-index 609bfc3..94d76dd 100644
+index a09a5f7..b4babf5 100644
 --- a/styles.css
 +++ b/styles.css
-@@ -1,5 +1,10 @@
- body {
-     font-family: Arial, sans-serif;
-     background-color: #f4f4f4;
+@@ -5,6 +5,12 @@
+ 
+ .project-selector {
+     display: flex;
++    flex-wrap: wrap;
+     margin-bottom: 20px;
  }
  
- .select-wrapper {
-     display: inline-block;
-     position: relative;
- }
- 
-+select option {
-+    padding: 8px;
++.project-selector select option[data-color="red"] {
++    background-color: #ffcccc;
 +}
 +
-+select option[data-color] {
-+    color: transparent; /* Hide text color */
-+    background-color: inherit; /* Use parent's background */
-+    position: relative;
++.project-selector select option[data-color="blue"] {
++    background-color: #cce5ff;
++}
++
++.project-selector select option[data-color="green"] {
++    background-color: #d4edda;
 +}
  
- .btn-secondary {
-     background-color: #007BFF;
-     color: white;
+ .custom-project {
+     display: flex;
+     align-items: center;
  }
  
- .highlighted {
-     font-weight: bold;
-     border: 2px solid #FFD700; /* Highlight border */
+ .timer-display {
+     /* Existing styles */
  }
+ 
 diff --git a/app.js b/app.js
-index f3b59ea..39531bc 100644
+index f1a9052..8e800b2 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,48 @@
- document.addEventListener('DOMContentLoaded', () => {
-     const projectSelect = document.getElementById('project-select');
+@@ -1,10 +1,53 @@
+ // Main application logic
++const projects = [
++    { name: 'Project A', color: 'red' },
++    { name: 'Project B', color: 'blue' },
++    { name: 'Project C', color: 'green' }
++];
  
-+    function saveSelectedProject(project) {
-+        localStorage.setItem('selectedProject', project);
-+    }
-+
-+    function getSelectedProject() {
-+        return localStorage.getItem('selectedProject');
-+    }
-+
-+    function highlightSelectedProject(project) {
-+        Array.from(projectSelect.options).forEach(option => {
-+            if (option.value === project) {
-+                option.classList.add('highlighted');
-+            } else {
-+                option.classList.remove('highlighted');
-+            }
-+        });
-+    }
-+
-+    function setAccessibility() {
-+        projectSelect.setAttribute('role', 'combobox');
-+        projectSelect.setAttribute('aria-expanded', 'false');
-+        projectSelect.setAttribute('aria-haspopup', 'listbox');
-+
-+        // Suppress default behavior on select
-+        projectSelect.addEventListener('focus', () => {
-+            projectSelect.setAttribute('aria-expanded', 'true');
-+        });
-+        projectSelect.addEventListener('blur', () => {
-+            projectSelect.setAttribute('aria-expanded', 'false');
-+        });
-+    }
-+
-     function loadSelectedProject() {
-         const selectedProject = getSelectedProject();
-         if (selectedProject) {
-             projectSelect.value = selectedProject;
-             highlightSelectedProject(selectedProject);
-         }
-     }
- 
-+    projectSelect.addEventListener('change', (event) => {
-+        const selectedProject = event.target.value;
-+        saveSelectedProject(selectedProject);
-+        highlightSelectedProject(selectedProject);
+ function updateProjectDropdown(projects) {
++    const select = document.getElementById('project-select');
++    projects.forEach(project => {
++        const option = document.createElement('option');
++        option.value = project.name;
++        option.text = project.name;
++        option.setAttribute('data-color', project.color);
++        select.appendChild(option);
 +    });
-+
-+    projectSelect.addEventListener('keydown', (event) => {
-+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-+            // Handle keyboard navigation
-+            let newIndex = event.key === "ArrowDown" ? 
-+                Math.min(projectSelect.selectedIndex + 1, projectSelect.options.length - 1) :
-+                Math.max(projectSelect.selectedIndex - 1, 0);
-+            projectSelect.selectedIndex = newIndex;
-+            saveSelectedProject(projectSelect.value);
-+            highlightSelectedProject(projectSelect.value);
-+            event.preventDefault();
++    highlightSelectedProject();
++}
+ 
++function highlightSelectedProject() {
++    const select = document.getElementById('project-select');
++    const selectedValue = localStorage.getItem('selectedProject');
++    Array.from(select.options).forEach(option => {
++        if (option.value === selectedValue) {
++            option.selected = true;
++            select.style.backgroundColor = option.getAttribute('data-color');
 +        }
 +    });
++}
++
++function handleKeyboardNavigation(event) {
++    const select = document.getElementById('project-select');
++    if (event.key === 'ArrowDown') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex + 1) % select.options.length;
++    } else if (event.key === 'ArrowUp') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex - 1 + select.options.length) % select.options.length;
++    }
++}
  
-     loadSelectedProject();
-+    setAccessibility();
+ document.addEventListener('DOMContentLoaded', () => {
++    updateProjectDropdown(projects);
+     const select = document.getElementById('project-select');
+
+     select.addEventListener('change', (event) => {
+         const selectedProject = event.target.value;
+         localStorage.setItem('selectedProject', selectedProject);
+         highlightSelectedProject();
+     });
++    
++    document.addEventListener('keydown', handleKeyboardNavigation);
  });
-diff --git a/tests/app.test.js b/tests/app.test.js
-new file mode 100644
-+++ b/tests/app.test.js
-@@ -0,0 +1,15 @@
-+describe('Project Selector', () => {
-+    beforeEach(() => {
-+        localStorage.clear();
-+    });
 +
-+    test('saveSelectedProject saves to localStorage', () => {
-+        const project = 'Project A';
-+        saveSelectedProject(project);
-+        expect(localStorage.getItem('selectedProject')).toBe(project);
-+    });
-+
-+    test('getSelectedProject retrieves from localStorage', () => {
-+        const project = 'Project B';
-+        localStorage.setItem('selectedProject', project);
-+        expect(getSelectedProject()).toBe(project);
-+    });
-+
-+    // Additional UI and accessibility tests would go here...
-+});
 ```
 
 ### Task 4 Output
 
 ### Code Review Feedback
 
-#### Correctness
-- The code generally appears to function as intended in managing project selection and maintaining accessibility features.
-- Ensure that the functions `saveSelectedProject` and `getSelectedProject` are defined in a scope that allows them to be tested. In the current test file, they do not seem to be in scope, which will lead to errors in the tests.
+**Correctness:**
+- In the JavaScript file, the `updateProjectDropdown` function should first clear any existing options before populating the dropdown with new projects. This ensures that old projects do not persist in the dropdown if this function is called multiple times.
+- The `highlightSelectedProject` function is called after options are appended in `updateProjectDropdown`. This assumes that `localStorage` has the correct data. Ensure this data is set and handled correctly to avoid null values.
 
-#### Security
-- There are no apparent security issues in the provided code. However, consider implementing input validation when adding a custom project name to prevent potential XSS if it is rendered in the DOM directly.
+**Security:**
+- Since user input can be added via the custom project input, ensure to handle this input safely to prevent XSS attacks. This can be done by sanitizing the input before using it.
+- Always validate and sanitize any data retrieved from `localStorage`.
 
-#### Edge Cases
-- When saving a custom project, ensure that the input does not allow blank or invalid names.
-- When retrieving the selected project from localStorage, consider handling cases where no project is selected gracefully. For example, check if the returned value is `null` or `''`.
-- The `highlighted` class relies on DOM attributes and CSS styles. Test how it behaves when options are added/removed and ensure any selected project still highlights appropriately.
+**Edge Cases:**
+- Consider what happens if the user enters a name for a new project that already exists in the dropdown. You should check for duplicates before adding new projects to the dropdown or store.
+- If the user deletes the selected item from localStorage or it is never set, the application should handle this scenario gracefully without throwing errors.
 
-#### Style and Maintainability
-- Maintain consistency in string quotes. It is recommended to choose single or double quotes and stick to one throughout the code.
-- Add comments to complex sections, particularly within functions that handle interactions to increase readability and maintainability.
-- Use more descriptive function names, particularly `setAccessibility`. Consider renaming it to `initializeAccessibilityAttributes` to better convey its purpose.
+**Style and Maintainability:**
+- The JavaScript could be refactored to create a dedicated function to set the background color based on the selected project. Having a separate function can help keep the code DRY (Don't Repeat Yourself).
+- Consider separating concerns further, e.g., moving DOM manipulations into functions dedicated solely to that purpose, which would enhance readability.
+- The CSS class names `.btn-secondary` could be more descriptive or context-specific.
 
-### Suggested Changes
-- Move `saveSelectedProject` and `getSelectedProject` functions into the global scope or restructure the test file to import them correctly.
-- Add input validation within the custom project input functionality to handle blank submissions and potential XSS attacks.
-- Enhance accessibility further by ensuring the options are keyboard navigable and ensure that changes to selections update the accessibility attributes effectively.
-- Consider adding tests for:
-  - Attempting to save an empty custom project name.
-  - Behavior when localStorage doesn't contain an expected project.
-  - Functional integrity of keyboard navigation.
+**Suggested Changes:**
+- Modify `updateProjectDropdown` to clear the dropdown options:
+  ```javascript
+  select.innerHTML = ''; // Clear existing options
+  ```
 
-### Conclusion
-With these changes, the code will be more robust against edge cases, ensure better security practices, and remain maintainable over time. Always ensure that tests cover potential user behaviors, especially for inputs that modify the UI or application state.
+- Update the custom project input handling for XSS:
+  ```javascript
+  const sanitizedInput = customProjectInput.value.replace(/</g, "&lt;").replace(/>/g, "&gt;"); 
+  ```
+
+- Introduce duplicate checking before adding new projects:
+  ```javascript
+  if (!projects.some(p => p.name === sanitizedInput)) {
+      projects.push({ name: sanitizedInput, color: 'default-color' }); // Determine a default color
+      updateProjectDropdown(projects); // Refresh dropdown
+  }
+  ```
+
+- Create a separate function to set background color in `highlightSelectedProject`:
+  ```javascript
+  function setBackgroundColor(select, color) {
+      select.style.backgroundColor = color;
+  }
+  ```
+
+By addressing the points above, the patch will be more robust, maintainable, and secure, ensuring the user's experience is seamless and error-free.
 
 ## Extracted Patch
 
 ```diff
 diff --git a/index.html b/index.html
-index 714a13d..b12b542 100644
+index 4e3e695..2a5b4a1 100644
 --- a/index.html
 +++ b/index.html
-@@ -1,7 +1,8 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Beautiful Timetracker</title>
-     <link rel="stylesheet" href="styles.css">
- </head>
- <body>
-     <div class="container">
-         <header>
-             <h1>⏱️ Beautiful Timetracker</h1>
-             <p class="subtitle">Track your time beautifully</p>
-         </header>
- 
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
-                     <label for="project-select">Select project:</label>
-                     <div class="select-wrapper">
-                         <select id="project-select" aria-label="Select a project" tabindex="0">
-                             <option value="" data-color="">-- Choose a project --</option>
-                             <option value="Project A" data-color="#FF5733">Project A</option>
-                             <option value="Project B" data-color="#33C1FF">Project B</option>
-                             <option value="Project C" data-color="#FF33A8">Project C</option>
-                         </select>
-                     </div>
-                     <div class="custom-project">
-                         <input type="text" id="custom-project-input" placeholder="Add a new project">
-                         <button id="add-project-btn" class="btn-secondary">+</button>
-                     </div>
+@@ -10,7 +10,12 @@
+                         <option value="Project A">Project A</option>
+                         <option value="Project B">Project B</option>
+                         <option value="Project C">Project C</option>
+-                        <option value="">-- Choose a project --</option>
++                        <option value="" disabled selected>-- Choose a project --</option>
++                        <option value="Project A" data-color="red">Project A</option>
++                        <option value="Project B" data-color="blue">Project B</option>
++                        <option value="Project C" data-color="green">Project C</option>
++                    </select>
++                </div>
++                <div class="custom-project">
++                    <input type="text" id="custom-project-input" placeholder="Add a new project">
++                    <button id="add-project-btn" class="btn-secondary">+</button>
                  </div>
+                </div>
  
-                 <div class="timer-display">
-                     <div class="current-time">
-                         <span id="timer">00:00:00</span>
-                     </div>
-                 </div>
-             </section>
-         </main>
-     </div>
-     <script src="app.js"></script>
- </body>
- </html>
 diff --git a/styles.css b/styles.css
-index 609bfc3..94d76dd 100644
+index a09a5f7..b4babf5 100644
 --- a/styles.css
 +++ b/styles.css
-@@ -1,5 +1,10 @@
- body {
-     font-family: Arial, sans-serif;
-     background-color: #f4f4f4;
+@@ -5,6 +5,12 @@
+ 
+ .project-selector {
+     display: flex;
++    flex-wrap: wrap;
+     margin-bottom: 20px;
  }
  
- .select-wrapper {
-     display: inline-block;
-     position: relative;
- }
- 
-+select option {
-+    padding: 8px;
++.project-selector select option[data-color="red"] {
++    background-color: #ffcccc;
 +}
 +
-+select option[data-color] {
-+    color: transparent; /* Hide text color */
-+    background-color: inherit; /* Use parent's background */
-+    position: relative;
++.project-selector select option[data-color="blue"] {
++    background-color: #cce5ff;
++}
++
++.project-selector select option[data-color="green"] {
++    background-color: #d4edda;
 +}
  
- .btn-secondary {
-     background-color: #007BFF;
-     color: white;
+ .custom-project {
+     display: flex;
+     align-items: center;
  }
  
- .highlighted {
-     font-weight: bold;
-     border: 2px solid #FFD700; /* Highlight border */
+ .timer-display {
+     /* Existing styles */
  }
+ 
 diff --git a/app.js b/app.js
-index f3b59ea..39531bc 100644
+index f1a9052..8e800b2 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,48 @@
- document.addEventListener('DOMContentLoaded', () => {
-     const projectSelect = document.getElementById('project-select');
+@@ -1,10 +1,53 @@
+ // Main application logic
++const projects = [
++    { name: 'Project A', color: 'red' },
++    { name: 'Project B', color: 'blue' },
++    { name: 'Project C', color: 'green' }
++];
  
-+    function saveSelectedProject(project) {
-+        localStorage.setItem('selectedProject', project);
-+    }
-+
-+    function getSelectedProject() {
-+        return localStorage.getItem('selectedProject');
-+    }
-+
-+    function highlightSelectedProject(project) {
-+        Array.from(projectSelect.options).forEach(option => {
-+            if (option.value === project) {
-+                option.classList.add('highlighted');
-+            } else {
-+                option.classList.remove('highlighted');
-+            }
-+        });
-+    }
-+
-+    function setAccessibility() {
-+        projectSelect.setAttribute('role', 'combobox');
-+        projectSelect.setAttribute('aria-expanded', 'false');
-+        projectSelect.setAttribute('aria-haspopup', 'listbox');
-+
-+        // Suppress default behavior on select
-+        projectSelect.addEventListener('focus', () => {
-+            projectSelect.setAttribute('aria-expanded', 'true');
-+        });
-+        projectSelect.addEventListener('blur', () => {
-+            projectSelect.setAttribute('aria-expanded', 'false');
-+        });
-+    }
-+
-     function loadSelectedProject() {
-         const selectedProject = getSelectedProject();
-         if (selectedProject) {
-             projectSelect.value = selectedProject;
-             highlightSelectedProject(selectedProject);
-         }
-     }
- 
-+    projectSelect.addEventListener('change', (event) => {
-+        const selectedProject = event.target.value;
-+        saveSelectedProject(selectedProject);
-+        highlightSelectedProject(selectedProject);
+ function updateProjectDropdown(projects) {
++    const select = document.getElementById('project-select');
++    projects.forEach(project => {
++        const option = document.createElement('option');
++        option.value = project.name;
++        option.text = project.name;
++        option.setAttribute('data-color', project.color);
++        select.appendChild(option);
 +    });
-+
-+    projectSelect.addEventListener('keydown', (event) => {
-+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-+            // Handle keyboard navigation
-+            let newIndex = event.key === "ArrowDown" ? 
-+                Math.min(projectSelect.selectedIndex + 1, projectSelect.options.length - 1) :
-+                Math.max(projectSelect.selectedIndex - 1, 0);
-+            projectSelect.selectedIndex = newIndex;
-+            saveSelectedProject(projectSelect.value);
-+            highlightSelectedProject(projectSelect.value);
-+            event.preventDefault();
++    highlightSelectedProject();
++}
+ 
++function highlightSelectedProject() {
++    const select = document.getElementById('project-select');
++    const selectedValue = localStorage.getItem('selectedProject');
++    Array.from(select.options).forEach(option => {
++        if (option.value === selectedValue) {
++            option.selected = true;
++            select.style.backgroundColor = option.getAttribute('data-color');
 +        }
 +    });
++}
++
++function handleKeyboardNavigation(event) {
++    const select = document.getElementById('project-select');
++    if (event.key === 'ArrowDown') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex + 1) % select.options.length;
++    } else if (event.key === 'ArrowUp') {
++        select.focus();
++        select.selectedIndex = (select.selectedIndex - 1 + select.options.length) % select.options.length;
++    }
++}
  
-     loadSelectedProject();
-+    setAccessibility();
+ document.addEventListener('DOMContentLoaded', () => {
++    updateProjectDropdown(projects);
+     const select = document.getElementById('project-select');
+
+     select.addEventListener('change', (event) => {
+         const selectedProject = event.target.value;
+         localStorage.setItem('selectedProject', selectedProject);
+         highlightSelectedProject();
+     });
++    
++    document.addEventListener('keydown', handleKeyboardNavigation);
  });
-diff --git a/tests/app.test.js b/tests/app.test.js
-new file mode 100644
-+++ b/tests/app.test.js
-@@ -0,0 +1,15 @@
-+describe('Project Selector', () => {
-+    beforeEach(() => {
-+        localStorage.clear();
-+    });
 +
-+    test('saveSelectedProject saves to localStorage', () => {
-+        const project = 'Project A';
-+        saveSelectedProject(project);
-+        expect(localStorage.getItem('selectedProject')).toBe(project);
-+    });
-+
-+    test('getSelectedProject retrieves from localStorage', () => {
-+        const project = 'Project B';
-+        localStorage.setItem('selectedProject', project);
-+        expect(getSelectedProject()).toBe(project);
-+    });
-+
-+    // Additional UI and accessibility tests would go here...
-+});
 
 ```
 
@@ -514,5 +404,5 @@ new file mode 100644
 ## Metadata
 
 - Result Type: `CrewOutput`
-- Output Length: 14677 characters
+- Output Length: 12906 characters
 - Number of Tasks: 4
