@@ -1,94 +1,175 @@
 diff --git a/index.html b/index.html
-index 1234567..89abcde 100644
+index 714a13d..b12b542 100644
 --- a/index.html
 +++ b/index.html
-@@ -10,6 +10,10 @@
-                </select>
-                </div>
-                <div class="custom-project">
-+                    <span class="project-badge" data-color="#ff6347">Project A</span>
-+                    <span class="project-badge" data-color="#4682b4">Project B</span>
-+                    <span class="project-badge" data-color="#3cb371">Project C</span>
-+
-                     <input type="text" id="custom-project-input" placeholder="Add a new project">
-                     <button id="add-project-btn" class="btn-secondary">+</button>
+@@ -1,7 +1,8 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Beautiful Timetracker</title>
+     <link rel="stylesheet" href="styles.css">
+ </head>
+ <body>
+     <div class="container">
+         <header>
+             <h1>⏱️ Beautiful Timetracker</h1>
+             <p class="subtitle">Track your time beautifully</p>
+         </header>
+ 
+         <main>
+             <section class="timer-section">
+                 <div class="project-selector">
+                     <label for="project-select">Select project:</label>
+                     <div class="select-wrapper">
+                         <select id="project-select" aria-label="Select a project" tabindex="0">
+                             <option value="" data-color="">-- Choose a project --</option>
+                             <option value="Project A" data-color="#FF5733">Project A</option>
+                             <option value="Project B" data-color="#33C1FF">Project B</option>
+                             <option value="Project C" data-color="#FF33A8">Project C</option>
+                         </select>
+                     </div>
+                     <div class="custom-project">
+                         <input type="text" id="custom-project-input" placeholder="Add a new project">
+                         <button id="add-project-btn" class="btn-secondary">+</button>
+                     </div>
                  </div>
-@@ -22,6 +26,7 @@
+ 
                  <div class="timer-display">
                      <div class="current-time">
                          <span id="timer">00:00:00</span>
-+                        <span id="selected-project"></span>
                      </div>
                  </div>
              </section>
-@@ -43,6 +48,7 @@
+         </main>
+     </div>
      <script src="app.js"></script>
  </body>
  </html>
-+<style>.project-badge {display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px;}</style>
- 
-diff --git a/app.js b/app.js
-index 1234567..89abcde 100644
---- a/app.js
-+++ b/app.js
-@@ -1,5 +1,6 @@
- document.addEventListener('DOMContentLoaded', () => {
-     loadProjects();
-+    highlightSelectedProject();
- 
-     document.getElementById('project-select').addEventListener('change', selectProject);
- });
- 
-     const projects = JSON.parse(localStorage.getItem('projects')) || ['Project A', 'Project B', 'Project C'];
-     const projectSelect = document.getElementById('project-select');
- 
-         const option = document.createElement('option');
-         option.value = project;
-         option.textContent = project;
-+        const badge = document.createElement('span');
-+        badge.className = 'project-badge';
-+        badge.style.backgroundColor = projectColors[project];
-+        option.appendChild(badge);
-         projectSelect.appendChild(option);
-     });
- });
- function selectProject(event) {
-     const selectedProject = event.target.value;
-     document.getElementById('selected-project').textContent = selectedProject;
-     saveProjectSelection(selectedProject);
- }
--function saveProjectSelection(project) {
--    localStorage.setItem('activeProject', project);
--}
-+const projectColors = {
-+    'Project A': '#ff6347',
-+    'Project B': '#4682b4',
-+    'Project C': '#3cb371'
-+};
-+function highlightSelectedProject() {
-+    const activeProject = localStorage.getItem('activeProject');
-+    if (activeProject) {
-+        const projectSelect = document.getElementById('project-select');
-+        projectSelect.value = activeProject;
-+        document.getElementById('selected-project').textContent = activeProject;
-+    }
-+}
-+function saveProjectSelection(project) {
-+    localStorage.setItem('activeProject', project);
-+}
 diff --git a/styles.css b/styles.css
-index 1234567..89abcde 100644
+index 609bfc3..94d76dd 100644
 --- a/styles.css
 +++ b/styles.css
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,10 @@
  body {
      font-family: Arial, sans-serif;
-     background-color: #f9f9f9;
+     background-color: #f4f4f4;
  }
+ 
+ .select-wrapper {
+     display: inline-block;
+     position: relative;
+ }
+ 
++select option {
++    padding: 8px;
++}
 +
-+.project-badge {
-+    display: inline-block;
-+    width: 10px;
-+    height: 10px;
-+    border-radius: 50%;
++select option[data-color] {
++    color: transparent; /* Hide text color */
++    background-color: inherit; /* Use parent's background */
++    position: relative;
++}
+ 
+ .btn-secondary {
+     background-color: #007BFF;
+     color: white;
  }
+ 
+ .highlighted {
+     font-weight: bold;
+     border: 2px solid #FFD700; /* Highlight border */
+ }
+diff --git a/app.js b/app.js
+index f3b59ea..39531bc 100644
+--- a/app.js
++++ b/app.js
+@@ -1,3 +1,48 @@
+ document.addEventListener('DOMContentLoaded', () => {
+     const projectSelect = document.getElementById('project-select');
+ 
++    function saveSelectedProject(project) {
++        localStorage.setItem('selectedProject', project);
++    }
++
++    function getSelectedProject() {
++        return localStorage.getItem('selectedProject');
++    }
++
++    function highlightSelectedProject(project) {
++        Array.from(projectSelect.options).forEach(option => {
++            if (option.value === project) {
++                option.classList.add('highlighted');
++            } else {
++                option.classList.remove('highlighted');
++            }
++        });
++    }
++
++    function setAccessibility() {
++        projectSelect.setAttribute('role', 'combobox');
++        projectSelect.setAttribute('aria-expanded', 'false');
++        projectSelect.setAttribute('aria-haspopup', 'listbox');
++
++        // Suppress default behavior on select
++        projectSelect.addEventListener('focus', () => {
++            projectSelect.setAttribute('aria-expanded', 'true');
++        });
++        projectSelect.addEventListener('blur', () => {
++            projectSelect.setAttribute('aria-expanded', 'false');
++        });
++    }
++
+     function loadSelectedProject() {
+         const selectedProject = getSelectedProject();
+         if (selectedProject) {
+             projectSelect.value = selectedProject;
+             highlightSelectedProject(selectedProject);
+         }
+     }
+ 
++    projectSelect.addEventListener('change', (event) => {
++        const selectedProject = event.target.value;
++        saveSelectedProject(selectedProject);
++        highlightSelectedProject(selectedProject);
++    });
++
++    projectSelect.addEventListener('keydown', (event) => {
++        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
++            // Handle keyboard navigation
++            let newIndex = event.key === "ArrowDown" ? 
++                Math.min(projectSelect.selectedIndex + 1, projectSelect.options.length - 1) :
++                Math.max(projectSelect.selectedIndex - 1, 0);
++            projectSelect.selectedIndex = newIndex;
++            saveSelectedProject(projectSelect.value);
++            highlightSelectedProject(projectSelect.value);
++            event.preventDefault();
++        }
++    });
+ 
+     loadSelectedProject();
++    setAccessibility();
+ });
+diff --git a/tests/app.test.js b/tests/app.test.js
++++ b/tests/app.test.js
+@@ -0,0 +1,15 @@
++describe('Project Selector', () => {
++    beforeEach(() => {
++        localStorage.clear();
++    });
++
++    test('saveSelectedProject saves to localStorage', () => {
++        const project = 'Project A';
++        saveSelectedProject(project);
++        expect(localStorage.getItem('selectedProject')).toBe(project);
++    });
++
++    test('getSelectedProject retrieves from localStorage', () => {
++        const project = 'Project B';
++        localStorage.setItem('selectedProject', project);
++        expect(getSelectedProject()).toBe(project);
++    });
++
++    // Additional UI and accessibility tests would go here...
++});
