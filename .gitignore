@@ -25,6 +25,11 @@ Thumbs.db
 *.tmp
 *.log
 *~
+*.orig
+*.rej
+*.backup
+*.diff
+*.patch
 
 # Python (for CrewAI)
 __pycache__/
