@@ -1,76 +1,63 @@
-diff --git a/app.js b/app.js
-index e21c7fa..d7ab83a 100644
---- a/app.js
-+++ b/app.js
-@@ -1,6 +1,7 @@
- let currentProject = '';
- let timerInterval = null;
- let sessions = [];
-+function showToast(message) {
-+    const toast = document.createElement('div');
-+    toast.className = 'toast';
-+    toast.innerText = message;
-+    document.body.appendChild(toast);
-+    setTimeout(() => toast.remove(), 3000);
-+}
- function switchProject(newProject) {
-     const session = { project: currentProject, time: Date.now() }; 
-     sessions.push(session);
-     currentProject = newProject;
-     clearInterval(timerInterval);
-     startTimer();
-     showToast(`Switched to project: ${newProject}`);
- }
- 
- function startTimer() {
-     // Implementation for starting the timer at 00:00:00
- }
- // HTML elements and event listeners to switch project
- document.getElementById('project-select').addEventListener('change', (event) => {
-     const newProject = event.target.value;
-     if (newProject) {
-         switchProject(newProject);
-     }
- });
 diff --git a/index.html b/index.html
-index 3df12af..5b3bc43 100644
+index e69de29..f0c2e47 100644
 --- a/index.html
 +++ b/index.html
-@@ -10,6 +10,7 @@
- <link rel="stylesheet" href="styles.css">
- </head>
- <body>
-     <div class="container">
-         <header>
-             <h1>⏱️ Beautiful Timetracker</h1>
-             <p class="subtitle">Track your time beautifully</p>
-         </header>
-+        <div class="toast-container"></div>
-         <main>
-             <section class="timer-section">
-                 <div class="project-selector">
- 
-diff --git a/styles.css b/styles.css
-index 56eb84d..5f7b0b1 100644
---- a/styles.css
-+++ b/styles.css
-@@ -5,6 +5,12 @@
- body {
-     font-family: Arial, sans-serif;
- }
-+.toast {
-+    position: fixed;
-+    bottom: 20px;
-+    right: 20px;
-+    background-color: #333;
-+    color: #fff;
-+    padding: 10px 20px;
-+    border-radius: 5px;
-+    animation: fadeIn 0.5s, fadeOut 0.5s 2.5s forwards;
+@@ -0,0 +1,18 @@
++<section class="session-history" id="session-history" style="display: none;">
++    <h2>Session History</h2>
++    <div id="session-list" class="session-list"></div>
++    <p id="empty-state" class="empty-state" style="display: none;">No session history available.</p>
++</section>
++
++<script src="app.js"></script>
++<link rel="stylesheet" href="styles.css">
++
+diff --git a/app.js b/app.js
+index 9d2f6de..e5c18e4 100644
+--- a/app.js
++++ b/app.js
+@@ -1,4 +1,18 @@
++function renderSessionHistory() {
++    const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
++    const sortedSessions = sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
++    const sessionList = document.getElementById('session-list');
++    const emptyState = document.getElementById('empty-state');
++
++    if (sortedSessions.length === 0) {
++        emptyState.style.display = 'block';
++        return;
++    }
++
++    emptyState.style.display = 'none';
++    sessionList.innerHTML = sortedSessions.map(session => `
++        <div class="session-entry" style="color: ${session.color};">
++            <span>${session.project}</span> - <span>${session.duration} mins</span> - <span>${new Date(session.timestamp).toLocaleString()}</span>
++        </div>
++    `).join('');
 +}
 +
-+@keyframes fadeIn {
-+    from { opacity: 0; }
-+    to { opacity: 1; }
+ function startTimer() {
+     // existing timer logic
+ }
+ 
+diff --git a/styles.css b/styles.css
+index 9b1a8cd..0744318 100644
+--- a/styles.css
++++ b/styles.css
+@@ -1,0 +1,12 @@
++.session-history {
++    margin-top: 20px;
++}
++
++.session-list {
++    max-height: 400px;
++    overflow-y: auto;
++    border: 1px solid #ccc;
++    padding: 10px;
++}
++
++.session-entry {
++    margin-bottom: 5px;
++    font-size: 14px;
 +}
 +

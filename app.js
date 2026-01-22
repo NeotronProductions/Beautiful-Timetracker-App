@@ -6,6 +6,15 @@ let currentProject = null;
 let timeEntries = [];
 let projects = ['Projekt A', 'Projekt B', 'Projekt C'];
 
+// Toast notification function
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 // DOM elements
 const projectSelect = document.getElementById('project-select');
 const customProjectInput = document.getElementById('custom-project-input');
@@ -41,6 +50,48 @@ function setupEventListeners() {
 
 function handleProjectSelect() {
     const selected = projectSelect.value;
+    
+    // If timer is running and switching to a different project, save current session
+    if (currentTimer && currentProject && selected && selected !== currentProject) {
+        // Store the old project before any changes
+        const oldProject = currentProject;
+        
+        // Stop the current timer first
+        clearInterval(currentTimer);
+        currentTimer = null;
+        
+        // Calculate final elapsed time before saving
+        const finalElapsed = timerStartTime ? Date.now() - timerStartTime : timerElapsed;
+        
+        // Save the current session before switching
+        const entry = {
+            id: Date.now(),
+            project: oldProject,
+            duration: finalElapsed,
+            startTime: timerStartTime,
+            endTime: Date.now(),
+            date: new Date().toISOString().split('T')[0]
+        };
+        timeEntries.unshift(entry);
+        saveToLocalStorage();
+        
+        // Update UI to show the saved entry
+        updateUI();
+        
+        console.log('Saved entry on project switch:', entry);
+        
+        // Reset timer for new project
+        timerElapsed = 0;
+        timerStartTime = Date.now();
+        
+        // Start timer for new project
+        currentTimer = setInterval(updateTimer, 100);
+        updateTimer();
+        
+        // Show toast notification
+        showToast(`Switched to project: ${selected}`);
+    }
+    
     if (selected) {
         currentProject = selected;
         startBtn.disabled = false;
@@ -76,7 +127,8 @@ function handleStart() {
     currentTimer = setInterval(updateTimer, 100);
     startBtn.disabled = true;
     stopBtn.disabled = false;
-    projectSelect.disabled = true;
+    // Allow project switching while timer is running (for issue #660)
+    // projectSelect.disabled = true;
     customProjectInput.disabled = true;
     addProjectBtn.disabled = true;
     const resetBtn = document.getElementById('reset-btn');
