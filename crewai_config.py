@@ -8,6 +8,14 @@ All agents are pre-configured with project context to ensure correct JavaScript 
 from crewai import Agent, Task, Crew
 from pathlib import Path
 import os
+import urllib3
+
+# Configure urllib3 to use longer timeouts for GitHub API calls
+# This fixes "Connection to api.github.com timed out" errors
+urllib3.util.timeout.Timeout.DEFAULT_TIMEOUT = 60  # Increase from default 15 seconds
+
+# Optionally disable urllib3 warnings (uncomment if you want to suppress timeout warnings)
+# urllib3.disable_warnings(urllib3.exceptions.ConnectTimeoutError)
 
 # ============================================================================
 # PROJECT PATHS

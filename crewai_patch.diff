@@ -1,0 +1,91 @@
+diff --git a/index.html b/index.html
+index e5f6e29..a1c9b45 100644
+--- a/index.html
++++ b/index.html
+@@ -10,6 +10,7 @@
+         </div>
+     </div>
+ 
++    <div id="edit-dialog" class="modal hidden">
++        <div class="modal-content">
+             <span class="close">&times;</span>
+             <h2>Edit Session</h2>
+             <form id="edit-form">
+                 <label for="edit-start-time">Start time:</label>
+                 <input type="datetime-local" id="edit-start-time" required>
+ 
+                 <label for="edit-end-time">End time:</label>
+                 <input type="datetime-local" id="edit-end-time" required>
+ 
+                 <label for="edit-duration">Duration (auto-calculate):</label>
+                 <input type="text" id="edit-duration" disabled>
+                 <button type="submit">Save</button>
+             </form>
+         </div>
+ 
+     <div id="session-list"></div>
+     <div class="toast hidden">Changes undone</div>
+ </body>
+diff --git a/app.js b/app.js
+index d4a6c3f..d8a6e6a 100644
+--- a/app.js
++++ b/app.js
+@@ -1,6 +1,7 @@
+ document.addEventListener('DOMContentLoaded', function () {
+     const editDialog = document.getElementById('edit-dialog');
+     const editForm = document.getElementById('edit-form');
+     const sessionList = document.getElementById('session-list');
+     const toast = document.querySelector('.toast');
++    let sessionData = []; // Array to hold session data for persistence
+     function loadSessions() {
+         const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
+         sessionData = sessions;
+         renderSessions(sessions);
+     }
+     function renderSessions(sessions) {
+         sessionList.innerHTML = '';
+         sessions.forEach((session, index) => {
+             const sessionDiv = document.createElement('div');
+             sessionDiv.className = 'session';
+             sessionDiv.innerHTML = `
+                 <p>Start time: ${new Date(session.start).toLocaleString()}</p>
+                 <p>End time: ${new Date(session.end).toLocaleString()}</p>
+                 <p>Duration: ${session.duration} minutes</p>
+                 <button class="edit-btn" data-index="${index}">Edit</button>
+             `;
+             sessionList.appendChild(sessionDiv);
+         });
+@@ -9,6 +10,29 @@
+     }
+     editForm.addEventListener('submit', function (event) {
++        event.preventDefault();
++        const index = editForm.dataset.index;
++        const startTime = new Date(editForm['edit-start-time'].value).getTime();
++        const endTime = new Date(editForm['edit-end-time'].value).getTime();
++        const duration = Math.floor((endTime - startTime) / 60000);
++        
++        if (duration < 0) {
++            alert('End time must be after start time');
++            return;
++        }
++        
++        sessionData[index] = { start: startTime, end: endTime, duration };
++        localStorage.setItem('sessions', JSON.stringify(sessionData));
++        renderSessions(sessionData);
++        toast.innerHTML = 'Session edited successfully.';
++        toast.classList.remove('hidden');
++        setTimeout(() => toast.classList.add('hidden'), 3000);
++        editDialog.classList.add('hidden');
+     });
++    sessionList.addEventListener('click', function (event) {
++        if (event.target.classList.contains('edit-btn')) {
++            const index = event.target.dataset.index;
++            const session = sessionData[index];
++            editForm['edit-start-time'].value = new Date(session.start).toISOString().slice(0, -8);
++            editForm['edit-end-time'].value = new Date(session.end).toISOString().slice(0, -8);
++            editForm.dataset.index = index;
++            editDialog.classList.remove('hidden');
++        }
++    });
+     loadSessions();
+ });
