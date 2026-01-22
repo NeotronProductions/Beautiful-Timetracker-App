@@ -1,43 +1,91 @@
+diff --git a/index.html b/index.html
+index e5f6e29..a1c9b45 100644
+--- a/index.html
++++ b/index.html
+@@ -10,6 +10,7 @@
+         </div>
+     </div>
+ 
++    <div id="edit-dialog" class="modal hidden">
++        <div class="modal-content">
+             <span class="close">&times;</span>
+             <h2>Edit Session</h2>
+             <form id="edit-form">
+                 <label for="edit-start-time">Start time:</label>
+                 <input type="datetime-local" id="edit-start-time" required>
+ 
+                 <label for="edit-end-time">End time:</label>
+                 <input type="datetime-local" id="edit-end-time" required>
+ 
+                 <label for="edit-duration">Duration (auto-calculate):</label>
+                 <input type="text" id="edit-duration" disabled>
+                 <button type="submit">Save</button>
+             </form>
+         </div>
+ 
+     <div id="session-list"></div>
+     <div class="toast hidden">Changes undone</div>
+ </body>
 diff --git a/app.js b/app.js
-index 1234567..89abcdef 100644
+index d4a6c3f..d8a6e6a 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,25 @@
-+function confirmReset() {
-+  const timerMinutes = Math.floor(timer / 60);
-+  if (timerMinutes > 1) {
-+    return confirm("Are you sure you want to reset the timer? This will discard any ongoing session.");
-+  }
-+  return true;
-+}
-+
-+function updateTimerDisplay(newTime) {
-+  const minutes = Math.floor(newTime / 60);
-+  const seconds = newTime % 60;
-+  document.querySelector('.current-time').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-+}
-+
- let timer = 0;
- let currentProject = '';
- let projects = [];
-  if (!confirmReset()) return;
-  
-  // Start the timer logic
-  if (timer > 60) { // Simulate a significant time threshold for confirmation
-    confirmReset();
-  }
-  
-  // Stop the timer logic
-  session = null;
-  if (!confirmReset()) return;
-  
-  updateTimerDisplay(0);
-- **Correctness**: The changes made in this patch ensure that the `confirmReset` function correctly calculates the number of minutes remaining and displays a confirmation dialog. The `updateTimerDisplay` function ensures that the timer display is updated correctly when the time changes.
-- **Security**: The use of `Math.floor` to convert the timer into minutes helps prevent any potential floating-point errors. The `confirm` dialog used in `confirmReset` has no security vulnerabilities as it displays a simple confirmation prompt, not sensitive information.
-- **Edge Cases**:
-  - The code handles scenarios where the timer is reset before reaching 60 minutes, ensuring that the user is prompted to confirm.
-  - The code ensures that the timer display updates correctly even if the timer is stopped and started again.
-- **Style and Maintainability**: 
-  - The function names are descriptive (e.g., `confirmReset`, `updateTimerDisplay`), which improves readability.
-  - The use of `let` for variables and `const` for constants helps in understanding variable scope and immutability, making the code cleaner and easier to maintain.
-  - The comments added explain the purpose of each function, enhancing the code's maintainability.
+@@ -1,6 +1,7 @@
+ document.addEventListener('DOMContentLoaded', function () {
+     const editDialog = document.getElementById('edit-dialog');
+     const editForm = document.getElementById('edit-form');
+     const sessionList = document.getElementById('session-list');
+     const toast = document.querySelector('.toast');
++    let sessionData = []; // Array to hold session data for persistence
+     function loadSessions() {
+         const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
+         sessionData = sessions;
+         renderSessions(sessions);
+     }
+     function renderSessions(sessions) {
+         sessionList.innerHTML = '';
+         sessions.forEach((session, index) => {
+             const sessionDiv = document.createElement('div');
+             sessionDiv.className = 'session';
+             sessionDiv.innerHTML = `
+                 <p>Start time: ${new Date(session.start).toLocaleString()}</p>
+                 <p>End time: ${new Date(session.end).toLocaleString()}</p>
+                 <p>Duration: ${session.duration} minutes</p>
+                 <button class="edit-btn" data-index="${index}">Edit</button>
+             `;
+             sessionList.appendChild(sessionDiv);
+         });
+@@ -9,6 +10,29 @@
+     }
+     editForm.addEventListener('submit', function (event) {
++        event.preventDefault();
++        const index = editForm.dataset.index;
++        const startTime = new Date(editForm['edit-start-time'].value).getTime();
++        const endTime = new Date(editForm['edit-end-time'].value).getTime();
++        const duration = Math.floor((endTime - startTime) / 60000);
++        
++        if (duration < 0) {
++            alert('End time must be after start time');
++            return;
++        }
++        
++        sessionData[index] = { start: startTime, end: endTime, duration };
++        localStorage.setItem('sessions', JSON.stringify(sessionData));
++        renderSessions(sessionData);
++        toast.innerHTML = 'Session edited successfully.';
++        toast.classList.remove('hidden');
++        setTimeout(() => toast.classList.add('hidden'), 3000);
++        editDialog.classList.add('hidden');
+     });
++    sessionList.addEventListener('click', function (event) {
++        if (event.target.classList.contains('edit-btn')) {
++            const index = event.target.dataset.index;
++            const session = sessionData[index];
++            editForm['edit-start-time'].value = new Date(session.start).toISOString().slice(0, -8);
++            editForm['edit-end-time'].value = new Date(session.end).toISOString().slice(0, -8);
++            editForm.dataset.index = index;
++            editDialog.classList.remove('hidden');
++        }
++    });
+     loadSessions();
+ });

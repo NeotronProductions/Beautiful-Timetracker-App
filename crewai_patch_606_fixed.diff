@@ -1,0 +1,103 @@
+diff --git a/index.html b/index.html
+index e69de29..f0c2e47 100644
+--- a/index.html
++++ b/index.html
+@@ -58,7 +58,12 @@
+             <section class="summary-section">
+                 <h2>Today's summary</h2>
+                 <div id="today-summary" class="summary-grid"></div>
+             </section>
+ 
+             <section class="entries-section">
+                 <h2>Time entries</h2>
+                 <div id="entries-list" class="entries-list"></div>
+             </section>
++
++            <section class="session-history" id="session-history" style="display: none;">
++                <h2>Session History</h2>
++                <div id="session-list" class="session-list"></div>
++                <p id="empty-state" class="empty-state" style="display: none;">No session history available.</p>
++            </section>
+         </main>
+     </div>
+ 
+diff --git a/app.js b/app.js
+index 9d2f6de..e5c18e4 100644
+--- a/app.js
++++ b/app.js
+@@ -1,3 +1,20 @@
++// Session History Function
++function renderSessionHistory() {
++    const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
++    const sortedSessions = sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
++    const sessionList = document.getElementById('session-list');
++    const emptyState = document.getElementById('empty-state');
++
++    if (sortedSessions.length === 0) {
++        emptyState.style.display = 'block';
++        return;
++    }
++
++    emptyState.style.display = 'none';
++    sessionList.innerHTML = sortedSessions.map(session => `
++        <div class="session-entry" style="color: ${session.color};">
++            <span>${session.project}</span> - <span>${session.duration} mins</span> - <span>${new Date(session.timestamp).toLocaleString()}</span>
++        </div>
++    `).join('');
++}
++
+ // State management
+ let currentTimer = null;
+ let timerStartTime = null;
+diff --git a/styles.css b/styles.css
+index 9b1a8cd..0744318 100644
+--- a/styles.css
++++ b/styles.css
+@@ -1,17 +1,4 @@
+-* {
+-.session-history {
+-    margin-top: 20px;
+-}
+-
+-.session-list {
+-    max-height: 400px;
+-    overflow-y: auto;
+-    border: 1px solid #ccc;
+-    padding: 10px;
+-}
+-
+-.session-entry {
+-    margin: 0;
+-    padding: 0;
+-    box-sizing: border-box;
+-}
++* {
++    margin: 0;
++    padding: 0;
++    box-sizing: border-box;
++}
+ 
+ body {
+@@ -330,6 +317,20 @@
+     color: #999;
+     font-size: 1.1em;
+ }
+ 
++.session-history {
++    margin-top: 20px;
++}
++
++.session-list {
++    max-height: 400px;
++    overflow-y: auto;
++    border: 1px solid #ccc;
++    padding: 10px;
++}
++
++.session-entry {
++    margin-bottom: 5px;
++    font-size: 14px;
++}
++
+ @media (max-width: 768px) {
+     header h1 {
