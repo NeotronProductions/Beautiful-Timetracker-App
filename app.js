@@ -33,6 +33,10 @@ function setupEventListeners() {
     });
     startBtn.addEventListener('click', handleStart);
     stopBtn.addEventListener('click', handleStop);
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', handleReset);
+    }
 }
 
 function handleProjectSelect() {
@@ -75,6 +79,10 @@ function handleStart() {
     projectSelect.disabled = true;
     customProjectInput.disabled = true;
     addProjectBtn.disabled = true;
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.disabled = false;
+    }
 }
 
 function handleStop() {
@@ -106,8 +114,46 @@ function handleStop() {
     projectSelect.disabled = false;
     customProjectInput.disabled = false;
     addProjectBtn.disabled = false;
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.disabled = true;
+    }
     
     updateUI();
+}
+
+function confirmReset() {
+    const timerMinutes = Math.floor(timerElapsed / 60000);
+    if (timerMinutes > 1) {
+        return confirm("Are you sure you want to reset the timer? This will discard any ongoing session.");
+    }
+    return true;
+}
+
+function handleReset() {
+    if (!confirmReset()) return;
+    
+    // Stop timer if running
+    if (currentTimer) {
+        clearInterval(currentTimer);
+        currentTimer = null;
+    }
+    
+    // Reset timer state
+    timerElapsed = 0;
+    timerStartTime = null;
+    updateTimer();
+    
+    // Re-enable controls
+    startBtn.disabled = !currentProject;
+    stopBtn.disabled = true;
+    projectSelect.disabled = false;
+    customProjectInput.disabled = false;
+    addProjectBtn.disabled = true; // Disable reset when at zero
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.disabled = true;
+    }
 }
 
 function updateTimer() {

@@ -1,43 +1,76 @@
 diff --git a/app.js b/app.js
-index 1234567..89abcdef 100644
+index e21c7fa..d7ab83a 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,25 @@
-+function confirmReset() {
-+  const timerMinutes = Math.floor(timer / 60);
-+  if (timerMinutes > 1) {
-+    return confirm("Are you sure you want to reset the timer? This will discard any ongoing session.");
-+  }
-+  return true;
-+}
-+
-+function updateTimerDisplay(newTime) {
-+  const minutes = Math.floor(newTime / 60);
-+  const seconds = newTime % 60;
-+  document.querySelector('.current-time').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-+}
-+
- let timer = 0;
+@@ -1,6 +1,7 @@
  let currentProject = '';
- let projects = [];
-  if (!confirmReset()) return;
-  
-  // Start the timer logic
-  if (timer > 60) { // Simulate a significant time threshold for confirmation
-    confirmReset();
-  }
-  
-  // Stop the timer logic
-  session = null;
-  if (!confirmReset()) return;
-  
-  updateTimerDisplay(0);
-- **Correctness**: The changes made in this patch ensure that the `confirmReset` function correctly calculates the number of minutes remaining and displays a confirmation dialog. The `updateTimerDisplay` function ensures that the timer display is updated correctly when the time changes.
-- **Security**: The use of `Math.floor` to convert the timer into minutes helps prevent any potential floating-point errors. The `confirm` dialog used in `confirmReset` has no security vulnerabilities as it displays a simple confirmation prompt, not sensitive information.
-- **Edge Cases**:
-  - The code handles scenarios where the timer is reset before reaching 60 minutes, ensuring that the user is prompted to confirm.
-  - The code ensures that the timer display updates correctly even if the timer is stopped and started again.
-- **Style and Maintainability**: 
-  - The function names are descriptive (e.g., `confirmReset`, `updateTimerDisplay`), which improves readability.
-  - The use of `let` for variables and `const` for constants helps in understanding variable scope and immutability, making the code cleaner and easier to maintain.
-  - The comments added explain the purpose of each function, enhancing the code's maintainability.
+ let timerInterval = null;
+ let sessions = [];
++function showToast(message) {
++    const toast = document.createElement('div');
++    toast.className = 'toast';
++    toast.innerText = message;
++    document.body.appendChild(toast);
++    setTimeout(() => toast.remove(), 3000);
++}
+ function switchProject(newProject) {
+     const session = { project: currentProject, time: Date.now() }; 
+     sessions.push(session);
+     currentProject = newProject;
+     clearInterval(timerInterval);
+     startTimer();
+     showToast(`Switched to project: ${newProject}`);
+ }
+ 
+ function startTimer() {
+     // Implementation for starting the timer at 00:00:00
+ }
+ // HTML elements and event listeners to switch project
+ document.getElementById('project-select').addEventListener('change', (event) => {
+     const newProject = event.target.value;
+     if (newProject) {
+         switchProject(newProject);
+     }
+ });
+diff --git a/index.html b/index.html
+index 3df12af..5b3bc43 100644
+--- a/index.html
++++ b/index.html
+@@ -10,6 +10,7 @@
+ <link rel="stylesheet" href="styles.css">
+ </head>
+ <body>
+     <div class="container">
+         <header>
+             <h1>⏱️ Beautiful Timetracker</h1>
+             <p class="subtitle">Track your time beautifully</p>
+         </header>
++        <div class="toast-container"></div>
+         <main>
+             <section class="timer-section">
+                 <div class="project-selector">
+ 
+diff --git a/styles.css b/styles.css
+index 56eb84d..5f7b0b1 100644
+--- a/styles.css
++++ b/styles.css
+@@ -5,6 +5,12 @@
+ body {
+     font-family: Arial, sans-serif;
+ }
++.toast {
++    position: fixed;
++    bottom: 20px;
++    right: 20px;
++    background-color: #333;
++    color: #fff;
++    padding: 10px 20px;
++    border-radius: 5px;
++    animation: fadeIn 0.5s, fadeOut 0.5s 2.5s forwards;
++}
++
++@keyframes fadeIn {
++    from { opacity: 0; }
++    to { opacity: 1; }
++}
++
