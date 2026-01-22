@@ -25,42 +25,28 @@
                             <option value="Project C">Project C</option>
                         </select>
                     </div>
-                    <div id="project-list"></div>
-                    <div class="custom-project">
-                        <input type="text" id="custom-project-input" placeholder="Add a new project">
-                        <button id="add-project-btn" class="btn-secondary">+</button>
-                    </div>
                 </div>
-
-                <div class="timer-display">
-                    <div class="current-time">
-                        <span id="timer">00:00:00</span>
-                        <span id="selected-project"></span>
-                    </div>
-                    <div class="timer-controls">
-                        <button id="start-btn" class="btn-primary" disabled>
-                            <span class="btn-icon">▶</span> Start
-                        </button>
-                        <button id="stop-btn" class="btn-danger" disabled>
-                            <span class="btn-icon">⏸</span> Stop
-                        </button>
-                    </div>
-                    <div id="current-project-display" class="current-project"></div>
+                <button id="edit-session-btn" style="display: none;">Edit Session</button>
+                <div id="session-history">
+                    <!-- Session entries will be populated here -->
                 </div>
             </section>
-
-            <section class="summary-section">
-                <h2>Today’s summary</h2>
-                <div id="today-summary" class="summary-grid"></div>
-            </section>
-
-            <section class="entries-section">
-                <h2>Time entries</h2>
-                <div id="entries-list" class="entries-list"></div>
-            </section>
+            <div id="edit-dialog" class="modal">
+                <div class="modal-content">
+                    <span id="close-dialog" class="close">&times;</span>
+                    <h2>Edit Session</h2>
+                    <label for="start-time">Start Time:</label>
+                    <input type="datetime-local" id="start-time">
+                    <label for="end-time">End Time:</label>
+                    <input type="datetime-local" id="end-time">
+                    <div>
+                        <p>Total Duration: <span id="duration-display">0</span> minutes</p>
+                    </div>
+                    <button id="save-changes">Save Changes</button>
+                </div>
+            </div>
         </main>
+        <script src="app.js"></script>
     </div>
-
-    <script src="app.js"></script>
 </body>
 </html>
