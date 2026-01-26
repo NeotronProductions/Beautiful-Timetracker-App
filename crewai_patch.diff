@@ -1,43 +1,63 @@
+diff --git a/index.html b/index.html
+index e69de29..f0c2e47 100644
+--- a/index.html
++++ b/index.html
+@@ -0,0 +1,18 @@
++<section class="session-history" id="session-history" style="display: none;">
++    <h2>Session History</h2>
++    <div id="session-list" class="session-list"></div>
++    <p id="empty-state" class="empty-state" style="display: none;">No session history available.</p>
++</section>
++
++<script src="app.js"></script>
++<link rel="stylesheet" href="styles.css">
++
 diff --git a/app.js b/app.js
-index 1234567..89abcdef 100644
+index 9d2f6de..e5c18e4 100644
 --- a/app.js
 +++ b/app.js
-@@ -1,3 +1,25 @@
-+function confirmReset() {
-+  const timerMinutes = Math.floor(timer / 60);
-+  if (timerMinutes > 1) {
-+    return confirm("Are you sure you want to reset the timer? This will discard any ongoing session.");
-+  }
-+  return true;
+@@ -1,4 +1,18 @@
++function renderSessionHistory() {
++    const sessions = JSON.parse(localStorage.getItem('sessions')) || [];
++    const sortedSessions = sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
++    const sessionList = document.getElementById('session-list');
++    const emptyState = document.getElementById('empty-state');
++
++    if (sortedSessions.length === 0) {
++        emptyState.style.display = 'block';
++        return;
++    }
++
++    emptyState.style.display = 'none';
++    sessionList.innerHTML = sortedSessions.map(session => `
++        <div class="session-entry" style="color: ${session.color};">
++            <span>${session.project}</span> - <span>${session.duration} mins</span> - <span>${new Date(session.timestamp).toLocaleString()}</span>
++        </div>
++    `).join('');
 +}
 +
-+function updateTimerDisplay(newTime) {
-+  const minutes = Math.floor(newTime / 60);
-+  const seconds = newTime % 60;
-+  document.querySelector('.current-time').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+ function startTimer() {
+     // existing timer logic
+ }
+ 
+diff --git a/styles.css b/styles.css
+index 9b1a8cd..0744318 100644
+--- a/styles.css
++++ b/styles.css
+@@ -1,0 +1,12 @@
++.session-history {
++    margin-top: 20px;
 +}
 +
- let timer = 0;
- let currentProject = '';
- let projects = [];
-  if (!confirmReset()) return;
-  
-  // Start the timer logic
-  if (timer > 60) { // Simulate a significant time threshold for confirmation
-    confirmReset();
-  }
-  
-  // Stop the timer logic
-  session = null;
-  if (!confirmReset()) return;
-  
-  updateTimerDisplay(0);
-- **Correctness**: The changes made in this patch ensure that the `confirmReset` function correctly calculates the number of minutes remaining and displays a confirmation dialog. The `updateTimerDisplay` function ensures that the timer display is updated correctly when the time changes.
-- **Security**: The use of `Math.floor` to convert the timer into minutes helps prevent any potential floating-point errors. The `confirm` dialog used in `confirmReset` has no security vulnerabilities as it displays a simple confirmation prompt, not sensitive information.
-- **Edge Cases**:
-  - The code handles scenarios where the timer is reset before reaching 60 minutes, ensuring that the user is prompted to confirm.
-  - The code ensures that the timer display updates correctly even if the timer is stopped and started again.
-- **Style and Maintainability**: 
-  - The function names are descriptive (e.g., `confirmReset`, `updateTimerDisplay`), which improves readability.
-  - The use of `let` for variables and `const` for constants helps in understanding variable scope and immutability, making the code cleaner and easier to maintain.
-  - The comments added explain the purpose of each function, enhancing the code's maintainability.
++.session-list {
++    max-height: 400px;
++    overflow-y: auto;
++    border: 1px solid #ccc;
++    padding: 10px;
++}
++
++.session-entry {
++    margin-bottom: 5px;
++    font-size: 14px;
++}
++
