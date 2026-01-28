@@ -44,6 +44,8 @@ Beautiful-Timetracker-App/
 ├── index.html              # Main HTML entry point
 ├── styles.css              # Main stylesheet
 ├── app.js                  # Main application logic
+├── server.js               # Node.js server
+├── package.json            # Node.js dependencies
 ├── README.md               # This file
 ├── .gitignore              # Git ignore rules
 │
@@ -51,13 +53,27 @@ Beautiful-Timetracker-App/
 │   ├── GETTING_STARTED.md
 │   ├── PROJECT_CONTEXT.md
 │   ├── SERVER_SETUP.md
+│   ├── README_SERVER.md
+│   ├── SETUP_COMPLETE.md
+│   ├── SETUP_STATUS.md
 │   ├── PULL_REQUEST_GUIDE.md
 │   └── ...
+│
+├── scripts/                # Scripts and utilities
+│   └── crewai/            # CrewAI integration scripts
+│       ├── crewai_config.py
+│       ├── crewai_example.py
+│       ├── activate_crewai.sh
+│       ├── requirements.txt
+│       └── README.md
 │
 ├── implementations/        # Issue implementation plans
 │   ├── issue_528_plan.md
 │   ├── issue_542_plan.md
 │   └── ...
+│
+├── tests/                  # Test files
+│   └── app.test.js
 │
 ├── patches/                # Patch files
 │   └── crewai_patch.diff
