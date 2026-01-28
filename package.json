@@ -2,11 +2,11 @@
   "name": "beautiful-timetracker-app",
   "version": "1.0.0",
   "description": "A beautiful, minimal time tracking web application",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "serve": "npx serve -p 9000"
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "serve": "npx serve -p 9000 public"
   },
   "keywords": [
     "timetracker",
