@@ -551,3 +551,15 @@ function loadFromLocalStorage() {
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', init);
 
+
+function calculateDuration(startTime, endTime) {
+  const duration = (endTime - startTime) / (1000 * 60);
+  if (duration < 0) throw new Error('Duration cannot be negative');
+  return duration;
+}
+
+function editSession(startTime, endTime) {
+  const duration = calculateDuration(startTime, endTime);
+  // Code to save the session with new start, end, and duration
+  return { startTime, endTime, duration };
+}
